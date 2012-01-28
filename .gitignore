@@ -1,2 +1,22 @@
 
 .DS_Store
+
+.Thesis.bib.swp
+
+0-*-Abstract.tex
+
+1-*-Intro.tex
+
+Thesis.toc
+
+Thesis.out
+
+1-*-Intro.aux
+
+Thesis.aux
+
+Thesis.bbl
+
+Thesis.blg
+
+Thesis.log
