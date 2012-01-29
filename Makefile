@@ -1,6 +1,6 @@
 BIBLIOGRAPHY=Thesis.bib
 
-LATEX=pdflatex
+LATEX=lualatex
 BIBTEX=bibtex8
 
 %.tex: %.md
