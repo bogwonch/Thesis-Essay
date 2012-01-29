@@ -1,3 +1,4 @@
+bytecode.  
 # Introduction
 
 In 2010 a team of researchers developed a generalized method for creating
@@ -213,7 +214,28 @@ arn't infact assemblable with the assembler.
 
 ## What is the Challenge?
 
-The original PIP paper[@Brumley2010]
+The original PIP paper[@Brumley2010] contains an anecdote where the effort
+required to create platform independant programs is described as requiring:
+
+> "a large, flat space to spread out the architecture reference manuals, and an
+> ample supply of caffeine.  Do not underrate the second part.
+
+Brumley et al go on to note that:
+
+> even the most caffeinated approaches have only been met with limited success;
+
+For this thesis we're not trying to fully generate platform independant
+programs; rather we're just trying to find the headers that enable them.  To do
+this we need two things:  a list of semantic-nop and jump instructions for each
+architecture we're interested in, and a method for combining them to form the
+headers.
+
+Finding the semantic-nops and jump instructions in theory is quite easy.  You
+can go through the architecture manual making notes of the all the
+instructructions which you're interested in (checking that they don't alter the
+state of the processor in any surprising way) before assembling them to get the
+bytecode.  
+
 
 
 ## Summary
