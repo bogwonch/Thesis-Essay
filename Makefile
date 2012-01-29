@@ -4,7 +4,7 @@ LATEX=pdflatex
 BIBTEX=bibtex8
 
 %.tex: %.md
-	@pandoc -t LaTeX $< -o $@ --bibliography ${BIBLIOGRAPHY} --natbib --listings --chapter
+	@pandoc -t LaTeX $< -o $@ --bibliography ${BIBLIOGRAPHY} --natbib --listings --chapter --smart
 
 
 Thesis.pdf: $(wildcard *.tex) $(wildcard *.md) Makefile $(wildcard *.bib)

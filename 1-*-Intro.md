@@ -1,4 +1,3 @@
-bytecode.  
 # Introduction
 
 In 2010 a team of researchers developed a generalized method for creating
@@ -218,7 +217,7 @@ The original PIP paper[@Brumley2010] contains an anecdote where the effort
 required to create platform independant programs is described as requiring:
 
 > "a large, flat space to spread out the architecture reference manuals, and an
-> ample supply of caffeine.  Do not underrate the second part.
+> ample supply of caffeine.  Do not underrate the second part."
 
 Brumley et al go on to note that:
 
@@ -230,13 +229,48 @@ this we need two things:  a list of semantic-nop and jump instructions for each
 architecture we're interested in, and a method for combining them to form the
 headers.
 
-Finding the semantic-nops and jump instructions in theory is quite easy.  You
-can go through the architecture manual making notes of the all the
-instructructions which you're interested in (checking that they don't alter the
-state of the processor in any surprising way) before assembling them to get the
-bytecode.  
+Finding the semantic-nops and jump instructions in theory is quite
+easy. You can go through the architecture manual making notes of the
+all the instructructions which you're interested in (checking that they
+don't alter the state of the processor in any surprising way) before
+assembling them to get the bytecode.  For some architectures it is as easy—the
+instruction sets are small and everything in the instruction set is accessible
+through a standard assembler. 
 
+The MIPS architecture[@MIPS] is a good example of a platform which it is easy to find
+semantic-nops.  A short RISC instruction set, a limited number of
+status-altering instructions and a register that discards any value written to
+it make it and ideal platform for writing semantic-nops.  Several million
+single instruction semantic-nops can be found with minimal effort.
 
+The Intel x86 architecture[@x86] is completely different however.  There are
+a large number of instructions here including multiple forms of the same
+instructions which the assembler is free to pick between.  All arithmetic
+instructions alter status flags.  Worse still there are some assembly
+instructions that can't be assembled by the GNU toolchain[@GAS:i386aligncode].
+It is considerably harder to find semantic-nops for the x86 architecture.
+
+Once we know the form of the instructions we want to assemble we need to
+compile and disassemble them to get the bytecode, and store them in a database.
+This isn't hard.  Once we have them in an indexable format we need to search
+for the patterns that overlap and find all the PIP headers.  This is a harder
+problem.  For platforms like AARCH32[@AARCH32] and MIPS[@MIPS] instructions are
+all compiled to be of fixed length (four bytes).  In this case finding the PIPs
+is easy: grep the list of jumps for one architecture with the list of
+semantic-nops for the other.  Intel's x86[@x86], again, makes things more
+complex.  The x86 platform has variable length instructions[^x86instructions],
+however, and this makes the problem slightly more complex.  We need strings of
+them to match up with just one MIPS instruction.  We need a better method to
+find them.
+
+[^x86instructions]: For example the instruction _nop_ compiles to _[0x90]_, but
+the _movsldup xmm0,xmm1_ instruction becomes _[0xF3, 0x0F, 0x12, 0xC1]_. 
+
+In Brumley et al's paper they use take a brute force approach and use regular
+expressions to generate all possible strings of semantic-nops and then search
+those for the PIPs.  This approach works well for them but they are limited to
+searching for four, eight and twelve bytes PIP sequences.  I intend to use
+constraint programming techniques to allow for a more flexible approach.
 
 ## Summary
 
