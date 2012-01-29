@@ -7,7 +7,7 @@ BIBTEX=bibtex8
 	@pandoc -t LaTeX $< -o $@ --bibliography ${BIBLIOGRAPHY} --natbib --listings --chapter
 
 
-Thesis.pdf: Thesis.tex $(wildcard *.md)
+Thesis.pdf: $(wildcard *.tex) $(wildcard *.md) Makefile $(wildcard *.bib)
 	@${LATEX}  Thesis
 	@${BIBTEX} Thesis
 	@${LATEX}  Thesis

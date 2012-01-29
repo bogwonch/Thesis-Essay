@@ -137,7 +137,7 @@ computers (some Linux x86 based, some ARM based) and you want to run a server
 hosting all the programs to share between them you don't have to maintain
 multiple versions.
 
-The problem here is that although PIPs could be used to write architecture
+The problem is that although PIPs could be used to write architecture
 independant programs there are more elegant solutions available than relying on
 the intersection of instruction sets between architectures.  There are a couple
 of preexisting systems for doing this such as Apple's *Universal Binary* or the
@@ -195,9 +195,35 @@ have any net effect on the state of the machine.  They find it to be a very
 slow transform to de-obfuscate (implying adding NOPs is a potent obfuscation
 technique) but the removal is quick once they have been found.
 
+Semantic-nops are another interesting aspect of the PIP problem.  Semantic-nops
+are important for PIPs as they give you multiple ways of doing nothing—so there
+is a greater chance of finding an overlap between different architectures but
+they turn up in other places too.  Many people [@Christodorescu2005,
+@Owens2011, @Bruschi2007,] have suggested using semantic-nops as an obfuscating
+technique.  Wartell et al suggest using them as part of a heuristic for
+diffenentiating between code and data for disassembled programs[@Wartell2011].
+The GNU Assembler has a short list of efficient, low power semantic-nop[^gas_nops]
+instructions it uses to pad instruction sequences to
+cache-lines[@GAS:i386aligncode].
 
-## Challenge
+[^gas_nops]: A comment above the function[@GAS:i386aligncode] notes that most
+of the instructions used as part of the semantic-nop sequences by the assembler
+arn't infact assemblable with the assembler.
 
+
+## What is the Challenge?
+
+The original PIP paper[@Brumley2010]
 
 
 ## Summary
+
+For this project I aim to: 
+
+  * Study the architectures for a variety of platforms (including x86, AARCH32,
+    XS1, and the JVM) with a view to finding semantic-nops.
+  * Create a database of semantic-nop instructions that is publicly available.
+  * Use constraint-programming techniques to create an algorithm for finding 
+    PIP headers for various architectures.
+  * Produce a database of Platform Independant Program headers.  
+
