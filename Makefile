@@ -1,15 +1,19 @@
 all: Thesis.md Thesis.template
 	pandoc -t latex Thesis.md -o Thesis.tex \
-		--standalone \
-		--chapter \
-		--toc \
-		--smart \
-		--listings \
-		--bibliography=Thesis.bib \
+		--standalone                          \
+		--toc                                 \
+		--smart                               \
+		--listings                            \
+		--chapter                             \
+		--bibliography=Thesis.bib             \
 		--biblatex
 
-	rubber -d Thesis 
-	rubber --clean Thesis
+	pdflatex Thesis
+	bibtex Thesis
+	pdflatex Thesis
+	pdflatex Thesis
+
 
 clean:
 	rubber --clean Thesis
+	rm Thesis.tex
