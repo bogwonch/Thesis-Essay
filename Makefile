@@ -1,4 +1,5 @@
 all: Thesis.md Thesis.template
+
 	pandoc -t latex Thesis.md -o Thesis.tex \
 		--standalone                          \
 		--toc                                 \
@@ -6,7 +7,8 @@ all: Thesis.md Thesis.template
 		--listings                            \
 		--chapter                             \
 		--bibliography=Thesis.bib             \
-		--biblatex
+		--biblatex \
+		-V fontsize=12pt
 
 	pdflatex Thesis
 	bibtex Thesis

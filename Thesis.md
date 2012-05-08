@@ -140,20 +140,6 @@ This data does not currently exist.
 
 
 
-Summary
--------
-
-For this project I aim to: 
-
-  * Study the architectures for a variety of platforms (including x86, AARCH32,
-    XS1, and the JVM) with a view to finding semantic NOPs.
-  * Create a database of semantic NOP instructions that is publicly available.
-  * Produce a database of Platform Independant Program headers.  
-  * Assess how often PIP headers turn up in regular code.
-
-
-
-
 Technical Basis
 ===============
 
@@ -170,7 +156,10 @@ Every instruction a processor wishes to offer has to be mapped to a sequence of 
 
 Different architectures offer different sorts of instructions.  The x86 achitecture offers a large number of instructions which can do many different things such as AES encryption and arithmetic[@refx86].  The ARM architecture[@Seal:2000vd], however, is much smaller—it doesn't have a division instruction.  The XS1 architecture[@May:ua] has several instructions for concurrency and communicating over ports which are not present on other architectures.  To make matters more complex the length of instructions also varies on an architecture by architecture basis:  MIPS and ARM instructions are always four bytes long but the x86 and JVM instruction sets use a variable length instruction size.
 
+
 When a processor wishes to execute a program (formed of bytecode) it *fetches* the instruction (or instructions if the processor is superscalar) to be run, *decodes* what the instruction is to do before *executing* it and *writing back* the result.  For this project we are targetting the decode stage.  We are trying to find bytecode that decodes to legitimate instructions for multiple processors, and then using this bytecode to make arbitary programs.
+
+
 
 
 Semantic NOPs
@@ -315,8 +304,6 @@ Tool-Chains Used
 
 
 
-
-
 Components
 ==========
 
@@ -331,8 +318,8 @@ Components
 Execution
 =========
 
-Results
--------
+Semantic NOPs
+-------------
 
   Architecture  Semantic NOPs Identified
   ------------  ------------------------
@@ -342,6 +329,46 @@ Results
   XS1           792
 
   : Semantic NOP sequences identified per architecture.
+
+Around nineteen million semantic NOP sequences for the ARM, MIPS, X86 and XS1 architectures were identified and stored in a database of the form:
+
+$$\text{\sc Semantic-NOPs}\left( 
+\text{\underline{architecture}}, 
+\text{instruction prefix}, 
+\text{instruction suffix},
+\text{\underline{bytecode prefix}},
+\text{\underline{bytecode suffix}}
+\right)$$
+
+
+By using prefix and suffixes we can separate certain multi-instruction semantic NOPs from the rest.  Some multi-instruction semantic NOPs can be written with more semantic NOPs within them and by using this prefix and suffix form we can distinguish the bit which needs to go first from the bit which must come at the end.
+
+For example consider these entries from the database:
+
+Architecture  Instruction Prefix  Instruction Suffix  Bytecode Prefix  Bytecode Suffix
+------------  ------------------  ------------------  ---------------  ---------------
+x86           PUSH %rax           POP %rax            50               58
+x86           NOP                                     90
+
+The bytecode `90` is a semantic NOP—the `nop` instruction.  Equally the sequence `push %rax; pop %rax` is a semantic NOP sequence with bytecode `5058`.  For the `push`-`pull` sequence we can place any code in between the `push` and the `pull`.  If that sequence is a semantic NOP too then the sequence as a whole is a semantic NOP also.  So `509058` is a semantic NOP; as is `50909058`; or ever `5050905858`.
+
+Looking at the numbers found in Table 5.1 the MIPS architecture is by far the easiest to find semantic NOPs for.  The MIPS register zero (which discards all writes to it) enables any instruction to be easily converted to a semantic NOP just by writing back to register zero.  Furthermore there are four different instructions in the MIPS architecture which take a sixteen bit immediate value as an operand and can be used without triggering an exception[@MIPSTechnologiesInc:2011ta]: `addiu`, `andi`, `ori` and `slti`.  These can all be used to generate semantic NOPs; but more importantly give us sixteen free bits for when we are trying to find the PIPs.
+
+ARM is the next easiest (though there are a hundredth of what can be found for MIPS).  The ARM7 architecture supports conditional execution which helps for finding semantic NOPs.  Conditional execution is implemented by having four bits encode a conditional flag and one bit used to indicate that the system flags should be updated[@Seal:2000vd].  If the flag is matched then the command is executed else the command becomes a NOP.  We have less registers than MIPS and while we have three instructions which can be used with immediate values (`add`, `sub` and `eor`) they only use an eight-bit value (as well as input to a barrel shifter).
+
+X86 has significantly less semantic NOPs than ARM or MIPS.  One reason for this is a lack of instructions that don't alter the state of the processor in some way: all the arithmetic instructions update flags inside the processor.  There are no instructions we can use with an immediate value to write a semantic NOP.  The XS1 architecture has a similar number of semantic NOPS to X86 for similar reasons.  There are less registers than X86 and only a limited number of instructions that take an immediate value that can be used for writing semantic NOPs.
+
+### The JVM
+
+The JVM is an interesting architecture but very different from all the others I looked at.  The JVM is a virtual stack based architecture[@Lindholm:2012wy].  Stack based architectures don't use registers like the X86 ARM or MIPS architectures, but rather expect most of their instructions operands to be on a stack in memory.  Some JVM instructions do take arguments passed as part of the bytecode instruction; such as the `goto` and `goto_w` instructions which take the two or four byte address to go to as an argument.  Most do not however and most JVM instructions are only one byte long.  Within functions the JVM imposes some strict rules about the size of the stack and constants available.  If the size of the stack exceeds the limit imposed then an exception is triggered.
+
+This leads to some problems with trying to find semantic NOPs for the JVM.  Most JVM NOPs that can be found are multi-instruction.  There is a `nop` instruction (`00`), but in general to write a semantic NOP for the JVM you need to push and pull values on and off the stack.  There are JVM instructions for rearranging the stack which can be used to create semantic NOPs—the `swap` instruction (`5f`) could be issued twice but even this only works if you know the type of the top two elements of the stack and can be sure they are the same type.  Unless you know something of the program you're adding these kinds of semantic NOPs too you can very easily end up triggering an exception from misuse of the stack. 
+
+Another problem with the JVM is from the complexity from chaining together the instructions.  If you ignore the problems associated with limited stack space and assume an unlimited amount of stack then you still have to cope with the problems of enumerating.  Specifically you need to find a sequence of instructions such that the stack is unchanged overall; but since most of the instructions take from the stack and add back to it you can use most of them so long as you pop (perhaps using the `pop` (`57`) or `pop_2` (`58`) instructions) any additional values back off at the end and make sure there are enough useless values on the stack initially so as not to alter any pre-existing ones.  Any dead-code program will work, which unfortunately means that there are a lot of them and they can be very long.  An interesting side point here is that there are quite a lot of tools out there to detect Java dead code sequences: such as DCD[@Vermat:wk] and UCD[@Spieler:uz].  The JDK hotspot compiler can optimize deadcode sequences away[@Goetz:ua].  It would be an interesting problem to see how rare dead code sequences are in regular compiled code (i.e. programs from Java code rather than handwritten JVM bytecode).  Dead code elimination is a common optimization, and I would suspect the answer is not often. 
+
+
+PIPs
+----
 
  *Architecture*  ARM LE              ARM BE              MIPS LE              MIPS BE              X86
  --------------  ------------------  ------------------  ------------------   ------------------  ------------------
@@ -363,6 +390,10 @@ Results
 
  : Eight byte PIPs found between architectures.  On top of these results $2.0\times10^{10}$ were found which were valid for the ARM LE MIPS BE and X86 architectures.
 
+Tables 5.2 and 5.3 show the number of PIPs found of length four and eight bytes respectively.
+
+Detecting PIPs
+--------------
 
   Program            ARM BE (%)   MIPS BE (%)  MIPS LE (%)  X86 (%)
   -----------------  -----------  -----------  -----------  --------
@@ -393,10 +424,10 @@ Results
   : Number of times eight byte PIP headers occur in X86 programs and the percentage of the total program that they occupy.  The programs *cat, echo and ls* and small UNIX utilities.  *Hello* is the hello-world program written in C.  *Clang* is a C compiler; *nasm* is an assembler and *pandoc* is a Haskell based markdown compiler.  *Linux-2.6* is the linux kernel and *mach_kernel* is a version of the mach kernel by Carnegie Mellon University found in Apple's MacOS Lion.   
 
 
-Evaluation
-----------
+Writing Programs with PIPs
+--------------------------
 
-````{ basicstyle=\scriptsize, caption="An example of a shellcode PIP for X86 and MIPS which attempts to spawn a shell and elevate permissions.  Shellcode for each architecture was taken from \autocite{Imrigan:vg}\autocite{TheWorm:vp}." }
+````{ basicstyle=\scriptsize, caption="An example of a shellcode PIP for X86 and MIPS which attempts to spawn a shell and elevate permissions.  Shellcode for each architecture was taken from [@Imrigan][@TheWorm:vp]." }
 eb020008 00000000 6a175831 dbcd80b0 80b02ecd 806a0b58 9952682f 2f736868
 2f62696e 89e35253 89e1cd80 00000000 00000000 00000000 00000000 00000000
 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
