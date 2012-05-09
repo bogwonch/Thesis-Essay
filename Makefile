@@ -8,7 +8,7 @@ all: Thesis.md Thesis.template
 		--chapter                             \
 		--bibliography=Thesis.bib             \
 		--biblatex \
-		-V fontsize=12pt
+		-V fontsize=10pt
 
 	pdflatex Thesis
 	bibtex Thesis

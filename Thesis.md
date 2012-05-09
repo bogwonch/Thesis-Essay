@@ -390,7 +390,23 @@ PIPs
 
  : Eight byte PIPs found between architectures.  On top of these results $2.0\times10^{10}$ were found which were valid for the ARM LE MIPS BE and X86 architectures.
 
-Tables 5.2 and 5.3 show the number of PIPs found of length four and eight bytes respectively.
+Tables 5.2 and 5.3 show the number of PIPs found of length four and eight bytes respectively. For four byte headers we found a similar number to Brumley et. al. [@Cha:2010uh] for the ARM and X86 architectures (tens of thousands), however we found significantly more for the MIPS and any other architecture than Brumley (hundreds for Brumley et. al. versus tens to hundreds of thousands for us).  Brumley et. al. don't give numbers for how many eight byte headers they can find however their numbers for twelve byte headers are around a thousand to ten-thousand times bigger than the number found for eight byte headers.  This seems fairly reasonable considering the number of possible different bytecode sequences for a twelve byte sequence is $2^{96}$ rather than only $2^{64}$ for an eight byte one.
+
+### Why So Few For MIPS?
+
+I am unsure why Brumley et. al. found so few four byte PIP headers for the MIPS architecture.  For the twelve byte sequences the number of PIP headers they found between the MIPS and any other architecture is significant but for four byte sequences their number found is very low.  For example they only found six PIP headers between the MIPS little endian and big endian architectures.  This suggests they didn't use the MIPS jump instruction to find any of their sequences.
+
+The MIPs jump instruction has the following format[@MIPSTechnologiesInc:2011ta]:
+$$\mathtt{000010\overbrace{\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot}^\text{address}}$$
+
+Its easy to find a four byte PIP header for the little and big endian variants of the MIPS architecture by using this instruction.  If we switch the endianess of the instruction and then remove all the $\cdot$s that overlap with a fixed bit we find that a jump instruction for both MIPS endiannesses has the form in binary of:
+$$\mathtt{000010\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot000010\cdot\cdot}$$
+Where $\cdot$ indicates either a 1 or a 0.  If we convert this sequence to hexadecimal we get the set of four byte PIP headers for different MIPS endianess variants that I identified.
+
+$$\mathtt{08....08, 08....09, 08....0a, 08....0b, 09....08, 09....09, 09....0a, 09....0b} \brace \mathtt{ 0a....08, 0a....09, 0a....0a, 0a....0b, 0b....08, 0b....09, 0b....0a, 0b....0b}$$
+
+
+
 
 Detecting PIPs
 --------------
@@ -405,7 +421,7 @@ Detecting PIPs
   Vim                32 (0.0%)    160 (0.1%)   33 (0.0%)    0
   *Random*           25 (0.0%)    94 (0.1%)    17 (0.0%)    0
 
-  : Number of times eight byte PIP headers occur in ARM programs and the percentage of the total program which they occupy.  All of the programs listed *apart from Mother 3 and Random* are taken from iPhone applications for Apple's IOS operating system.  *Mother 3* is a program for Nintendo's GameBoy Advance.  Random is a long string of random bytes.
+  : Number of times eight byte PIP headers occur in ARM programs and the percentage of the total program which they occupy.  All of the programs listed *apart from Mother 3 and Random* are taken from iPhone applications for Apple's iOS operating system.  *Mother 3* is a program for Nintendo's GameBoy Advance.  Random is a long string of random bytes.
 
 
   Program      ARM BE (%)   ARM LE (%)   MIPS BE (%)  MIPS LE (%)
@@ -419,15 +435,33 @@ Detecting PIPs
   mach_kernel  237 (0.0%)   0            5266 (0.3%)  0
   nasm         7 (0.0%)     0            72 (0.2%)    0
   pandoc       582 (0.1%)   0            2147 (0.1%)  0
-  *Random*     39 (0.0%)    0            205 (0.2%)   0
+  *Random*     39 (0.0%)    1 (0.0%)     205 (0.2%)   0
 
   : Number of times eight byte PIP headers occur in X86 programs and the percentage of the total program that they occupy.  The programs *cat, echo and ls* and small UNIX utilities.  *Hello* is the hello-world program written in C.  *Clang* is a C compiler; *nasm* is an assembler and *pandoc* is a Haskell based markdown compiler.  *Linux-2.6* is the linux kernel and *mach_kernel* is a version of the mach kernel by Carnegie Mellon University found in Apple's MacOS Lion.   
+
+
+To test the steganographic properties of PIPs I looked at how often they occur in various programs for the ARM and X86 architectures.  I chose to look at X86 and ARM as they are two of the most commonly found architectures today.  A processor with the X86 instruction set architecture is inside most consumer PCs and servers.  The ARM architecture[^whicharm], however, is found everywhere.  It is the dominant processor inside mobile phones with both Google's Android and Apple's iOS platforms running on this architecture.  ARM chips are often found in embedded systems and have even been found in massively parallel supercomputers[@Khan:2008uv]. 
+
+[^whicharm]: Specifically the ARM 7 32-bit architecture known as AArch32 not the new shiny 64-bit one.
+
+For the ARM architecture I focussed on *app-like* programs.  I looked at a variety of apps from games to text editors as well as a sequence of random bytes and a Gameboy advance game.  The Gameboy game is interesting as it also contains sound and graphics files built into it that the iOS applications do not.  The results are shown in Table 5.4.  The results seem to show that PIP headers very rarely turn up in ARM code; less than 0.1% typically.  Some PIP headers turn up for the ARM little endian and MIPS architectures, but next to none ever turn up for X86 PIP headers in ARM little endian programs.  It would be surprising if more that ten turned up in any program.  Another interesting point is that PIP headers don't appear to turn up in programs more often than they do in a random sequence of code. For X86 we see similar results (Table 5.5).  I looked at a range of program from very simple C programs and system utilities, to compilers and two operating system kernels.  Again we see that NOPs turn up very rarely in bytecode, 
+
+In Brumley et. al.'s paper[@Cha:2010uh] they suggest that whole platform independent programs could be created by splitting the program into several *gadgets* each with a PIP header and a block of code to be executed for each platform the program author wishes to target.  Brumley et. al. go on to suggest that a program could be split up into gadgets one instruction in length, however since each each gadget would feature a PIP header this would likely destroy any steganographic properties the author want in their program.   Because PIP headers are rare; a program with execution based steganography could be distinguished from a plaintext by counting the number of PIP headers that could be found and deciding whether that number is statistially significant.  When an author is trying to hide X86 behaviour this is a much bigger problem as the number of PIP headers that could be expected to turn up naturally in a program is very low.
+
+
+
+
+### Hiding PIP Code
+
+polymorphic pip code
+
+microcode updates
 
 
 Writing Programs with PIPs
 --------------------------
 
-````{ basicstyle=\scriptsize, caption="An example of a shellcode PIP for X86 and MIPS which attempts to spawn a shell and elevate permissions.  Shellcode for each architecture was taken from [@Imrigan][@TheWorm:vp]." }
+````{ basicstyle=\scriptsize\tt, caption="An example of a shellcode PIP for X86 and MIPS which attempts to spawn a shell and elevate permissions.  Shellcode for each architecture was taken from [@Imrigan][@TheWorm:vp]." }
 eb020008 00000000 6a175831 dbcd80b0 80b02ecd 806a0b58 9952682f 2f736868
 2f62696e 89e35253 89e1cd80 00000000 00000000 00000000 00000000 00000000
 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
