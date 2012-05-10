@@ -1,19 +1,22 @@
-all: Thesis.md Thesis.template
+latex=pdflatex
+
+all: Thesis.md 
 
 	pandoc -t latex Thesis.md -o Thesis.tex \
 		--standalone                          \
 		--toc                                 \
-		--smart                               \
 		--listings                            \
 		--chapter                             \
 		--bibliography=Thesis.bib             \
-		--biblatex \
-		-V fontsize=10pt
+		--biblatex                            \
+		--template=default.latex              \
+		-V fontsize=10pt                      \
+		-V mainfont="Fanwood Text"
 
-	pdflatex Thesis
+	${latex} Thesis
 	bibtex Thesis
-	pdflatex Thesis
-	pdflatex Thesis
+	${latex} Thesis
+	${latex} Thesis
 
 
 clean:

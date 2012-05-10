@@ -2,6 +2,7 @@
 % Joseph Hallett
 % \today
 
+
 Executive Summary
 =================
 
@@ -87,9 +88,6 @@ The problem is that although PIPs could be used to write architecture independan
 [^elfflag]: Of course there is nothing to stop you flipping the flag to some other value with `elfedit` utility from the GNU Binutils.
 
 Collberg et. al. [@Collberg:1997vt] describe different methods for hiding the structure of a program.  They give many different transforms but three are of particualar interest: adding dead code, adding redundant transforms, and outlining[^outlining] sections of code. 
-
-Adding dead code i
-
 
 These three are of interest because they describe what a PIP is doing, namely adding redundant NOPs and transforms which don't alter the state of the program before jumping to the actual code.
 
@@ -446,22 +444,99 @@ To test the steganographic properties of PIPs I looked at how often they occur i
 
 For the ARM architecture I focussed on *app-like* programs.  I looked at a variety of apps from games to text editors as well as a sequence of random bytes and a Gameboy advance game.  The Gameboy game is interesting as it also contains sound and graphics files built into it that the iOS applications do not.  The results are shown in Table 5.4.  The results seem to show that PIP headers very rarely turn up in ARM code; less than 0.1% typically.  Some PIP headers turn up for the ARM little endian and MIPS architectures, but next to none ever turn up for X86 PIP headers in ARM little endian programs.  It would be surprising if more that ten turned up in any program.  Another interesting point is that PIP headers don't appear to turn up in programs more often than they do in a random sequence of code. For X86 we see similar results (Table 5.5).  I looked at a range of program from very simple C programs and system utilities, to compilers and two operating system kernels.  Again we see that NOPs turn up very rarely in bytecode, 
 
-In Brumley et. al.'s paper[@Cha:2010uh] they suggest that whole platform independent programs could be created by splitting the program into several *gadgets* each with a PIP header and a block of code to be executed for each platform the program author wishes to target.  Brumley et. al. go on to suggest that a program could be split up into gadgets one instruction in length, however since each each gadget would feature a PIP header this would likely destroy any steganographic properties the author want in their program.   Because PIP headers are rare; a program with execution based steganography could be distinguished from a plaintext by counting the number of PIP headers that could be found and deciding whether that number is statistially significant.  When an author is trying to hide X86 behaviour this is a much bigger problem as the number of PIP headers that could be expected to turn up naturally in a program is very low.
+In Brumley et. al.'s paper[@Cha:2010uh] they suggest that whole platform independent programs could be created by splitting the program into several *gadgets* each with a PIP header and a block of code to be executed for each platform the program author wishes to target.  Brumley et. al. go on to suggest that a program could be split up into gadgets one instruction in length, however since each each gadget would feature a PIP header this would likely destroy any steganographic properties the author want in their program.   Because PIP headers are rare; a program with execution based steganography could be distinguished from a plaintext by counting the number of PIP headers that could be found and deciding whether that number is statistially significant.  When an author is trying to hide X86 behaviour this is a much bigger problem as the number of PIP headers that could be expected to turn up naturally in a program is very low.  
 
+### Detecting With Static Analysis
+
+If including several PIP headers and spliting the program into lots of small sections is going to remove steganographic properties what about using fewer gadgets and having longer section of platform specific code?  The problem with this approach is that it becomes very susceptible to static analysis.  Suppose we were to take a program for ARM and were to disassemble as if it were a program for X86.  There are likely to be a fair number of valid instructions in it for X86 just from the fact that a large amount of X86 bytecode is also valid ARM bytecode because designers of architectures like to make instruction sets dense for encode efficiency; but if we were to start seeing sequences that look like X86 calling conventions then we might immediately become suspicious that there is some steganographic execution behaviour hidden.
+
+As an example consider this PIP taken from [@Cha:2010uh]:
+
+  Hexidecimal                                      Characters
+  -----------------------------------------------  -------------------------------------------
+  \texttt{7f454c46 01010100 00000000 00000000}     \texttt{\frenchspacing .ELF............}
+  \texttt{02000300 01000000 54800408 34000000}     \texttt{\frenchspacing ........T...4...}
+  \texttt{00000000 00000000 34002000 01000000}     \texttt{\frenchspacing ........4. .....}
+  \texttt{00000000 01000000 00000000 00800408}     \texttt{\frenchspacing ................}
+  \texttt{00800408 f4000000 f4000000 05000000}     \texttt{\frenchspacing ................}
+  \texttt{00100000 90eb3e20 1700002a 1600003a}     \texttt{\frenchspacing ......> ...*...:}
+  \texttt{07000010 00000424 2128e003 0c000624}     \texttt{\frenchspacing .......\$!(.....\$}
+  \texttt{a40f0224 0c000000 a10f0224 0c000000}     \texttt{\frenchspacing ...\$.......\$....}
+  \texttt{f8ff1104 00000000 48656c6c 6f20776f}     \texttt{\frenchspacing ........Hello wo}
+  \texttt{726c640a 90909090 eb1731db 438b0c24}     \texttt{\frenchspacing rld.......1.C..\$}
+  \texttt{ba0c0000 00b80400 0000cd80 31c040cd}     \texttt{\frenchspacing ............1.\@.}
+  \texttt{80e8e4ff ffff4865 6c6c6f20 576f726c}     \texttt{\frenchspacing ......Hello Worl}
+  \texttt{640a9090 0100a0e3 18108fe2 0c20a0e3}     \texttt{\frenchspacing d............ ..}
+  \texttt{0470a0e3 000000ef 0000a0e3 0170a0e3}     \texttt{\frenchspacing .p...........p..}
+  \texttt{000000ef 0000a0e1 48656c6c 6f20576f}     \texttt{\frenchspacing ........Hello Wo}
+  \texttt{726c640a}                                \texttt{\frenchspacing rld.           }
+
+  : A PIP containing a *Hello World* program for ARM MIPS and X86.
+
+If we ignore that the program has the text *Hello world* three times in the bytecode the program might not be immediately suspcious.  The program only uses one platform independent section to split the code, so it isn't particularly suspicious by counting PIP headers.  If we diassemble the code, however, it starts to become far more suspicious. In Listing 5.1 a section of the program dissassembled for X86 architecture.  Two system calls (the `int 0x80`) are clearly made[@Kerrisk:vo]. Before each system call arguments are loaded such that the first is a write operation, and the second is an exit.  This program clearly has some X86 behaviour. 
+
+````{ basicstyle=\tt, caption="A disassembled section of the PIP in Table 5.6 for the X86 architecture." }
+write:
+        xor ebx, ebx
+        inc ebx
+        mov ecx, [esp]
+        mov edx, 0xc
+        mov eax, 0x4
+        int 0x80
+exit:
+        xor eax, eax
+        inc eax
+        int 0x80
+````
+
+If we disassember the program in Table 5.6 as an ARM program (as shown in Listing 5.2) however we can quickly find an equivalent section of code.   Again this is all valid ARM code and it obviously does a write system call followed by an exit.  It's in the PIP too so the PIP must have ARM behavior as well as X86; this program is probably a PIP and we have discovered this just by inspecting the disassembly—a form of static analysis.
+
+````{ basicstyle=\tt, caption="A disassembled section of the PIP in Table 5.6 this time for the ARM architecture." }
+write:
+        mov r0, #1 ; 0x1
+        add r1, pc, #24 ; 0x18
+        mov r2, #12 ; 0xc
+        mov r7, #4 ; 0x4
+        svc 0x00000000
+exit:
+        mov r0, #0 ; 0x0
+        mov r7, #1 ; 0x1
+        svc 0x00000000
+````
+
+If we try again using a MIPS disassembler we get the code in Listing 5.3.  Again  its pretty obvious what is going on and it didn't take long to find even by eye.  This PIP is probably valid on the MIPS platform as well as X86 and ARM, and we've done this through simple static analysis.  None of these sections of code are long—around nine instructions—and yet they give a strong indication that the program has PIP behaviour.  It would be an interesting extension to look at creating a static analyser to detect how much valid code for different architectures there is in a program and whether any of it seems to form a valid program snippet.
+
+````{ basicstyle=\tt, caption="A disassembled section of the PIP in Table 5.6 for the MIPS architecture." }
+write:
+        li a0,0
+        move a1,ra
+        li a2,12
+        li v0,4004
+        syscall
+exit:
+        li v0,4001
+        syscall
+````
 
 
 
 ### Hiding PIP Code
 
-polymorphic pip code
+Given that excessive use of PIP headers appears to make it obvious when a program is a PIP and that having long sequences of platform specific code give the game away as well; is there any way to use PIPs without destroying the steganographic properties?  Several techniques have been developed for creating analysis resistant malware[@Bethencourt:2008ug] which could equally be applied to resisting PIP detection.  Using signaures is relatively primative technique for detecting malware[@Zhang:2007jy] and several techniques have been developed which can evade it as well as improve upon it.
 
-microcode updates
+One approach is to use encryption.  The program code is stored inside the program as data but at run time the program decrypts it back to executable code[@Royal:2006ug].  This resists static analysis because the section of code we would want to analyze can't be read without decryption.  Unless we can recover the key and know how to decrypt the program we might not be able to spot the PIP behaviour.  Of course to do the decryption on multiple platforms we're either going to need a PIP malware extractor but if this can be written using less PIP headers than the full program then it might be a way forward.  
+
+Developing methods for detecting encrypted or packed malware is a current research topic and there have been several tools developed for detecting this[@Chouchane:2006cf][@Zhang:2007jy].  These could be applied to detecting packed PIP code as well.
+
+Metamorphic malware[@Sikorski:2011ua] takes a similar approach.  It again uses self-modifying code to alter a program so that it can evade signature based detection.  An approach would be to have a program that alters instructions to create the gadget headers in Brumley's paper[@Cha:2010uh] dynamically based on runtime information.  This suffers from similar problems to the encryption approach of needing a PIP modifier and there are several available techniques for detecting it [@Han:2011iu][@Ali:2011do].
+
+Another approach might be to issue a microcode update[@Smotherman:2010wr].  The idea here is that rather than try and decrypt part of the program so that it is valid we alter how the processor decodes the program so that the previously invalid buffer is now a valid program; perhaps even for multiple architectures.  Issuing microcode updates involves modifying the BIOS and is typically used by processor designers to patch bugs in the processor.  The technique is known to be difficult to utilize[@Skoudis:2004to] but is also very difficult to detect. It would be extremely interesting to look further at using microcode updates to create PIPs as there appears to be less available research on the topic.
 
 
 Writing Programs with PIPs
 --------------------------
 
-````{ basicstyle=\scriptsize\tt, caption="An example of a shellcode PIP for X86 and MIPS which attempts to spawn a shell and elevate permissions.  Shellcode for each architecture was taken from [@Imrigan][@TheWorm:vp]." }
+````{ basicstyle=\scriptsize\tt, caption="An example of a shellcode PIP for X86 and MIPS which attempts to spawn a shell and elevate permissions.  Shellcode for each architecture was taken from \autocite{@Imrigan}\autocite{@TheWorm:vp}." }
 eb020008 00000000 6a175831 dbcd80b0 80b02ecd 806a0b58 9952682f 2f736868
 2f62696e 89e35253 89e1cd80 00000000 00000000 00000000 00000000 00000000
 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
