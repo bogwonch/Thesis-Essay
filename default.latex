@@ -153,11 +153,12 @@ $if(date)$
 \date{$date$}
 $endif$
 
+\widowpenalty=300
+\clubpenalty=300
 \begin{document}
 $if(title)$
 \maketitle
 $endif$
-\raggedright
 
 $for(include-before)$
 $include-before$
@@ -165,7 +166,8 @@ $include-before$
 $endfor$
 $if(toc)$
 \tableofcontents
-
+\listoftables
+\lstlistoflistings
 $endif$
 $body$
 
