@@ -71,7 +71,7 @@ yet.
 
 \section{Constructing PIPs}
 
-In 2010 a team of researchers developed a generalized method for
+In 2010 a team of researchers developed a generalised method for
 creating Platform Independent Programs (PIPs)\autocite{Cha:2010uh}. A
 PIP is a special sort of program which can be run on multiple different
 computer architectures without modification. Unlike shell scripts or
@@ -79,14 +79,14 @@ programs written for a portable interpreter; a PIP does not require
 another program to run or compile it; rather it runs as a native program
 on multiple architectures with potentially different behaviour on each.
 
-A more formal definition a PIP is a string of bytecode $b$ such that for
-different machines $m_1$ and $m_2$, $b$ is a valid program if:
+A more formal definition a PIP is a string of byte-code $b$ such that
+for different machines $m_1$ and $m_2$, $b$ is a valid program if:
 
 \[m_1(b) \not = \bot \wedge m_2(b) \not =\bot.\]
 
 To construct a PIP one must analyse the instruction sets of each
 architecture and find instructions which compile to identical patterns
-of bytecode. The approach taken by the authors in \autocite{Cha:2010uh}
+of byte-code. The approach taken by the authors in \autocite{Cha:2010uh}
 was to find small PIPs with a very specific form: do nothing then jump.
 By ensuring each architecture jumped to a different point and that each
 architecture did not accidentally run into a region another architecture
@@ -95,7 +95,7 @@ splitting them up into blocks of instructions specific to each
 architecture and connecting them with the small PIPs.
 
 Consider the following example (taken from \autocite{Cha:2010uh}). The
-dissassembly for the x86 architecture is shown above, and for the MIPS
+disassembly for the X86 architecture is shown above, and for the MIPS
 platform bellow.
 
 \[\underbrace{\overbrace{90}^{\text{NOP}} \overbrace{eb20}^{\text{JMP}}
@@ -104,18 +104,19 @@ platform bellow.
 
 The string is valid on both platforms and has similar behaviour on both
 despite jumping to different locations. In fact this is a valid PIP for
-the x86, MIPS and ARM architectures. If we disassemble the pattern with
+the X86, MIPS and ARM architectures. If we disassemble the pattern with
 the Radare2 reverse engineering framework\autocite{radare} we can see
 that it disassembles to:
 
-\ctable[pos = H, center, botcap]{ll}
+\ctable[caption = Disassembly of an example PIP header from
+\autocite{Cha:2010uh}, pos = H, center, botcap]{ll}
 {% notes
 }
 {% rows
 \FL
 Architecture & Disassembly
 \ML
-x86 & nop; jmp 0x100000023; sub dl, {[}eax+0x243a20eb{]}; ja
+X86 & nop; jmp 0x100000023; sub dl, {[}eax+0x243a20eb{]}; ja
 0x10000000c; ???
 \\\noalign{\medskip}
 ARM & bcs 0x10083ae48; bcc 0x10083ae4c; streq r7, {[}r1{]}, \#-1828
@@ -124,8 +125,8 @@ MIPS & slti zero,s1,-5232; xori zero,s1,0xeb90; b 0x10001dc9c
 \LL
 }
 
-For the x86 architecture it is a nop instruction then a jump
-insturuction. The rest wont be executed (though some of it is valid x86
+For the X86 architecture it is a NOP instruction then a jump
+instruction. The rest wont be executed (though some of it is valid X86
 code) as the unconditional jump will have moved the program counter
 along. For the ARM architecture it is starts with two conditional jumps.
 The first tests if the processor's carry flag is set, and the next
@@ -135,16 +136,16 @@ the first two instructions write the result of the operation back to
 register zero. On the MIPS architecture any writes to register zero are
 discarded and the \lstinline!slti! and \lstinline!xori! can not cause
 any errors to occur. This means the first two instructions are
-equivalent to a \lstinline!nop! instruction. The third instruction is a
+equivalent to a \lstinline!NOP! instruction. The third instruction is a
 MIPS branch instruction, so the sequence for a MIPS computer is
 equivalent to do nothing and jump.
 
-Since for each of the x86, ARM, and MIPS architectures the bytecode is
+Since for each of the X86, ARM, and MIPS architectures the byte-code is
 equivalent to do nothing and jump; the instruction is a valid PIP.
 
-They go on to give a generalized algorithm for constructing these PIPs,
+They go on to give a generalised algorithm for constructing these PIPs,
 and say that they have a working implementation of it for creating PIPs
-for the x86, ARM, and MIPS platforms, as well as the Windows, Mac, and
+for the X86, ARM, and MIPS platforms, as well as the Windows, Mac, and
 Linux operating systems.
 
 \section{Aim Of The Project}
@@ -162,7 +163,7 @@ list of \emph{semantic NOPs}\footnote{A semantic NOP is an instruction
   \lstinline!NOP! instructions when taken as a whole and so is a
   \emph{multi-instruction semantic NOP}.} and potential branch
 instructions has been found for each architecture in the original paper
-and to extend the work of the original paper I have also analyzed a new
+and to extend the work of the original paper I have also analysed a new
 platform: XMOS XS1.
 
 Unfortunately there does not seem to be a public database of these
@@ -192,7 +193,7 @@ writing some other program which does not contain anything malicious.
 They either pre-arrange a shared secret which is the platform that their
 programs should really be run on: this forms the key. With the
 cover-text and steg-text created they create their message by generating
-them into a PIP where on one platform (x86 say) it appears to run the
+them into a PIP where on one platform (X86 say) it appears to run the
 innocuous program and on the secret key platform (ARM for the sake of
 argument) it runs the program they really wish to communicate. Alice
 hands the warden the program and tells him that it is for the innocuous
@@ -205,17 +206,17 @@ as for most platforms it will appear to be garbage just like any normal
 executable.
 
 A more real world example of this is to consider the relationship
-between computers (usually using an x86 processor) and modern
-smartphones (which often use ARM processors) running \emph{apps}. The
+between computers (usually using an X86 processor) and modern smart
+phones (which often use ARM processors) running \emph{apps}. The
 computer often stores backups of the applications used on the
 smartphone. Apple's iTunes program, for example, stores all the mobile
 applications associated with a user in it is library folder as
-zip-compressed archives. Suppose an attacker were to constuct a program
-which was a ligimate application on the ARM platform but when run on x86
+zip-compressed archives. Suppose an attacker were to construct a program
+which was a lignite application on the ARM platform but when run on X86
 behaved as a form of malware. The computer might have some form of
 anti-malware software, but unless it knows to scan the mobile
-applications as potential x86 viruses rather than the ARM ones they
-identify themselves as (and which arn't ARM malware) then the
+applications as potential X86 viruses rather than the ARM ones they
+identify themselves as (and which are not ARM malware) then the
 anti-malware program might miss the dangerous code.
 
 Another application is \emph{exfiltration protection}. Exfiltration is
@@ -237,7 +238,7 @@ attacker manages to compromise a system in such a way that they can
 alter the microcode of the processor, such as the recent HP printer
 attack amongst others\autocite{Cui:vx}\autocite{Scythale:tk}. Now
 suppose that as well as the microcode update they also modify an
-existing program, Brumley et. al suggest \lstinline!ls!, so that on the
+existing program, Brumley et. al. suggest \lstinline!ls!, so that on the
 compromised system it gives a backdoor or acts maliciously, but on
 another (say one which is trying to forensically work out what is wrong
 with the printer) it acts normally. Brumley et. al. point
@@ -247,22 +248,22 @@ scary prospect. Merely signing the program would be insufficient protect
 a user it would not check if the machine it was executing on had been
 modified.
 
-PIPs could also be used to create platform independent shellcode to take
-advantage of buffer overflows on software ported between different
+PIPs could also be used to create platform independent shell code to
+take advantage of buffer overflows on software ported between different
 architectures and operating systems. As well as developing PIPs to
 create architecture independent programs, Brumley et.
 al.\autocite{Cha:2010uh} extended the basic technique to create
 operating system programs. For operating system independent programs
-they exploited overlaps in calling conventions and interupts to develop
+they exploited overlaps in calling conventions and interrupts to develop
 PIPs which could be valid programs on multiple systems. Brumley et. al.
-give an example remote bind-shell shellcode for multiple architectures
+give an example remote bind-shell shell code for multiple architectures
 at the end of their paper \autocite{Cha:2010uh}.
 
-Another application for PIPs is to create actual platform independant
+Another application for PIPs is to create actual platform independent
 programs. The idea here is to compile a program for multiple
 architectures and create a PIP out of them. You would get a program that
 behaved the same but ran on multiple architectures. This could be
-useful, for example, if you have a network of computers (some Linux x86
+useful, for example, if you have a network of computers (some Linux X86
 based, some ARM based) and you want to run a server hosting all the
 programs to share between them you don't have to maintain multiple
 versions.
@@ -270,7 +271,7 @@ versions.
 \section{Other Approaches To Program Obfuscation}
 
 The problem is that although PIPs could be used to write architecture
-independant programs, there are more elegant solutions available than
+independent programs, there are more elegant solutions available than
 relying on the intersection of instruction sets between architectures.
 There are a couple of preexisting systems for doing this such as Apple's
 \emph{Universal Binary} or the \emph{FatELF}\autocite{Icculus:vl}
@@ -285,7 +286,7 @@ it\footnote{Of course there is nothing to stop you flipping the flag to
 
 Collberg et. al. \autocite{Collberg:1997vt} describe different methods
 for hiding the structure of a program. They give many different
-transforms but three are of particualar interest: adding dead code,
+transforms but three are of particular interest: adding dead code,
 adding redundant transforms, and outlining\footnote{Outlining is the
   opposite of inlining. For inlining we take a function call and replace
   it with the functions code inserted into the main program verbatim.
@@ -301,7 +302,7 @@ of the program before jumping to the actual code.
 
 Whilst adding the \lstinline!NOP! instructions is not a particularly
 \emph{resilient}\footnote{Resilience is a measure of how easy it is to
-  de-obfuscate a transform. It is usually measured in terms of the time
+  deobfuscate a transform. It is usually measured in terms of the time
   and space the deobfuscator has to run.} transformation (a program
 could replace or remove them) they are potent\footnote{Potency measures
   how confusing for a human the transform is. For example self-modifying
@@ -318,13 +319,13 @@ obfuscating.
 
 Interestingly papers, such as
 \autocite{Christodorescu:2005vh}\autocite{Christodorescu:2005vf}, even
-describe obfuscation techniques where they unobfuscate the addition of
+describe obfuscation techniques where they deobfuscate the addition of
 semantic NOPs using a novel (and patented
 \autocite{Christodorescu:2009wo}) tool called \emph{Hammock}. Hammock
 appears to be interesting because rather than using a catalogue of
 pre-known semantic NOPs it finds them by analysing whether sequences of
 code have any net effect on the state of the machine. They find it to be
-a very slow transform to unobfuscate (implying adding NOPs is a potent
+a very slow transform to deobfuscate (implying adding NOPs is a potent
 obfuscation technique) but the removal is quick once they have been
 found.
 
@@ -336,18 +337,18 @@ Many people
 \autocite{Christodorescu:2005vh}\autocite{Owens:2011um}\autocite{Bruschi:2007dn}
 have suggested using semantic NOPs as an obfuscating technique. Wartell
 et. al.\autocite{Wartell:2011ji} suggest using them as part of a
-heuristic for diffenentiating between code and data for disassembled
+heuristic for differentiating between code and data for disassembled
 programs. The GNU Assembler has a short list of efficient, low power
 semantic NOP\footnote{A comment above the
   function\autocite{Anonymous:td} notes that most of the instructions
-  used as part of the semantic NOP sequences by the assembler arn't
-  infact assemblable with the assembler.} instructions it uses to pad
+  used as part of the semantic NOP sequences by the assembler are not in
+  fact assemblable's with the assembler.} instructions it uses to pad
 instruction sequences to cache-lines\autocite{Anonymous:td}.
 
 \section{What Is The Challenge?}
 
 The original PIP paper\autocite{Cha:2010uh} contains an anecdote where
-the effort required to create platform independant programs is described
+the effort required to create platform independent programs is described
 as requiring:
 
 \begin{quote}
@@ -362,7 +363,7 @@ Brumley et al go on to note that:
 success;''
 
 \end{quote}
-For this thesis we are not trying to fully generate platform independant
+For this thesis we are not trying to fully generate platform independent
 programs; rather we are just trying to find the headers that enable
 them. To do this we need two things: a list of semantic NOP And jump
 instructions for each architecture we are interested in, and a method
@@ -370,32 +371,32 @@ for combining them to form the headers.
 
 Finding the semantic NOPs and jump instructions in theory is quite easy.
 You can go through the architecture manual making notes of the all the
-instructructions which you're interested in (checking that they don't
-alter the state of the processor in any surprising way) before
-assembling them to get the bytecode. For some architectures it \emph{is}
-easy---the instruction sets are small and everything in the instruction
-set is accessible through a standard assembler.
+instructions which you're interested in (checking that they don't alter
+the state of the processor in any surprising way) before assembling them
+to get the bytecode. For some architectures it \emph{is} easy---the
+instruction sets are small and everything in the instruction set is
+accessible through a standard assembler.
 
 The MIPS architecture\autocite{MIPSTechnologiesInc:2011ta} is a good
 example of a platform which it is easy to find semantic NOPs. A short
 RISC instruction set, a limited number of status-altering instructions
 and a register that discards any value written to it make it and ideal
 platform for writing semantic NOPs. Several million single instruction
-semantic NOPs can be found with minimal effort. The Intel x86
+semantic NOPs can be found with minimal effort. The Intel X86
 architecture\autocite{IntelCorporation:1997ta} is completely different
 however. There are a large number of instructions here including
 multiple forms of the same instructions which the assembler is free to
 pick between. All arithmetic instructions alter status flags. Worse
 still there are some assembly instructions that can not be assembled by
-the GNU toolchain\autocite{Anonymous:td}. It is considerably harder to
-find semantic NOPs for the x86 architecture.
+the GNU tool chain\autocite{Anonymous:td}. It is considerably harder to
+find semantic NOPs for the X86 architecture.
 
 Once we know the form of the instructions we want to assemble we need to
 compile and disassemble them to get the bytecode, and store them in a
 database. Once we have them in an indexable format we need to search for
 the patterns that overlap and find all the PIP headers. There are
 significant problems associated with finding these PIP headers. For
-platforms like AARCH32\autocite{Seal:2000vd} and
+platforms like ARM\autocite{Seal:2000vd} and
 MIPS\autocite{MIPSTechnologiesInc:2011ta} instructions are all compiled
 to be of fixed length (four bytes). In this case we could find short
 PIPs by comparing the lists of NOP instructions for one architecture and
@@ -404,8 +405,8 @@ lengths by finding the NOPs which do nothing on both architectures and
 padding to the length required.
 
 In practice however this approach doesn't work. Variable length
-instruction sets, such as x86\footnote{For example the instruction
-  \lstinline!nop! compiles to \lstinline![0x90]!, but the
+instruction sets, such as X86\footnote{For example the instruction
+  \lstinline!NOP! compiles to \lstinline![0x90]!, but the
   \lstinline!movsldup xmm0,xmm1! instruction becomes
   \lstinline![0xF3, 0x0F, 0x12, 0xC1]!.}, mean you need to combine
 instructions together to get them to the length you require. If there
@@ -414,13 +415,13 @@ instructions then this approach might be feasible but the numbers become
 huge. For example on many architectures there is an unconditional jump
 instruction. If this instruction takes a thirty-two bit address to jump
 to then there are $2^{32}$, over four billion, possible forms of this
-instruction to check. And this is just one instruction. On x86 it even
+instruction to check. And this is just one instruction. On X86 it even
 has more than one compiled form. Conditional jumps exasperate the
 problem further. For a conditional jump you need two (or more!) jump
 instructions, so that means $2^{64}$ possible variants to check which is
 huge.
 
-The MIPs architecture demonstrates well anouther issue. With the MIPS
+The MIPs architecture demonstrates well nether issue. With the MIPS
 architecture you have a register called zero which discards any value
 written to it. This offers great opportunities for finding semantic
 NOPs, but it also presents further problems with the size of patterns
@@ -468,7 +469,7 @@ other has registers to add together.
 
 Every instruction a processor wishes to offer has to be mapped to a
 sequence of bytecode\footnote{This is true in general but slightly
-  oversimplified. The x86 and ARM instruction sets both feature special
+  oversimplified. The X86 and ARM instruction sets both feature special
   instructions which can change how sequential pieces of bytecode are
   decoded. For example the ARM architecture\autocite{Seal:2000vd} can
   switch to decoding the THUMB or JVM instruction sets by using the
@@ -485,25 +486,25 @@ JVM\autocite{Lindholm:2012wy}, are stack based (they expect arguments to
 operations to be stored in a data structure called a stack where the top
 one or two items are the operands to most instructions.
 
-Different architectures offer different sorts of instructions. The x86
+Different architectures offer different sorts of instructions. The X86
 achitecture offers a large number of instructions which can do many
-different things such as AES encryption and arithmetic\autocite{refx86}.
-The ARM architecture\autocite{Seal:2000vd}, however, is much
-smaller---it doesn't have a division instruction. The XS1
+different things such as AES encryption and arithmetic{[}@refX86{]}. The
+ARM architecture\autocite{Seal:2000vd}, however, is much smaller---it
+doesn't have a division instruction. The XS1
 architecture\autocite{May:ua} has several instructions for concurrency
 and communicating over ports which are not present on other
 architectures. To make matters more complex the length of instructions
 also varies on an architecture by architecture basis: MIPS and ARM
-instructions are always four bytes long but the x86 and JVM instruction
+instructions are always four bytes long but the X86 and JVM instruction
 sets use a variable length instruction size.
 
 When a processor wishes to execute a program (formed of bytecode) it
 \emph{fetches} the instruction (or instructions if the processor is
 superscalar) to be run, \emph{decodes} what the instruction is to do
 before \emph{executing} it and \emph{writing back} the result. For this
-project we are targetting the decode stage. We are trying to find
+project we are targeting the decode stage. We are trying to find
 bytecode that decodes to legitimate instructions for multiple
-processors, and then using this bytecode to make arbitary programs.
+processors, and then using this bytecode to make arbitrary programs.
 
 \section{Semantic NOPs}
 
@@ -558,7 +559,7 @@ instruction\footnote{On the X86
   be a semantic NOP as arithmetic operations alter status flags as well
   as the registers they operate on{[}@refxasmnet:vu{]}.}. We call
 sequences like this semantic NOPs as well though more care must be taken
-when using these as if the machine were to handle an interupt whilst
+when using these as if the machine were to handle an interrupt whilst
 executing one the state of the machine might be altered unpredictably.
 
 Searching for the semantic NOPs is book work. You take the architecture
@@ -567,7 +568,7 @@ and whether any exceptions could be raised or flags overwritten. For
 simple instruction sets (like ARM or MIPS) this can be done in a couple
 of hours; but for complex instruction sets this can be an arduous
 process\footnote{Resources such as the \emph{X86 Opcode and Instruction
-  Reference} \autocite{refx86} are invaluable for discovering what each
+  Reference} {[}@refX86{]} are invaluable for discovering what each
   instruction actually does in a clear format.}.
 
 Once you have found the instructions you want to use for a semantic NOP
@@ -623,7 +624,7 @@ jump instructions. We generate this list the same way we find the
 semantic NOPs: enumerating the possible operations and then generalising
 by introducing \emph{don't care} symbols\footnote{A \emph{don't care}
   symbol represents a bit or byte of the instruction set whose value we
-  don't care about. For example the x86 short jump instruction could be
+  don't care about. For example the X86 short jump instruction could be
   represented in byte-code as \lstinline!eb..! where \lstinline!.! is
   the don't care symbol. We care that it is a jump instruction, which
   the \lstinline!eb! encodes; but we might not care where it jumps to so
@@ -642,7 +643,8 @@ output PIPs to the required length with don't cares if it is not long
 enough. Pseudo code for this process is given below in a python-esque
 language.
 
-\begin{lstlisting}[language=python]
+\begin{lstlisting}[language=python ,
+caption=Algorithm used to generate PIPs]
 def generate_possible_nop_jump_patterns(length, nop_list, jump_list):
     for jump in jump_list:
         pattern = [jump]
@@ -664,7 +666,8 @@ the PIPs in each architecture which have equivalent forms and produce a
 new PIP from them which forces some of the don't-cares to actualy values
 if one of the PIPs demands it.
 
-\begin{lstlisting}[language=haskell]
+\begin{lstlisting}[language=haskell ,
+caption=Method used for removing \emph{don't-cares} from potential PIP headers]
 -- Equality with don't cares
 (~=~) :: Nibble -> Nibble -> Bool
 '.' ~=~ _   = True
@@ -711,14 +714,14 @@ As described earlier; adding dead or garbage code is an established
 obfuscation technique, and it is in current use in several metamorphic
 codes such as Evol, ZMist, Regswap and
 MetaPHOR\autocite{Borello:2008vx}. Identifying dead code sequences is a
-technique already used by several antivirus tools as part of their
+technique already used by several anti virus tools as part of their
 toolchains. These can be leveraged to finding semantic NOPs by getting
 them to output the offending sequences.\footnote{Actually this does not
   work quite as described. A really simple and often used trick to
   implement dead code insertion is to introduce unreachable code that
   looks as if it could be reached (i.e.~by placing a conditional jump
   that is always taken just before it). This unreachable code might not
-  necesarilly have no net effect on the program execution but because it
+  necessarily have no net effect on the program execution but because it
   will never be run it does not matter anyway. From the point of view of
   a metamorphic virus this is an attractive technique because of the
   greater freedom of content inside the dead-code segment; and so many
@@ -775,9 +778,9 @@ program and false otherwise. The
 
 We can evaluate the detector and a set of signatures by seeing how well
 it can distinguish malware from non-malware. The false-negative rate is
-the percentage of all the malwares which the detector fails to report as
+the percentage of all the malware which the detector fails to report as
 being malware. The false-positive rate is the percentage of all
-non-malware detector incorectly reports as being malware. Depending on
+non-malware detector incorrectly reports as being malware. Depending on
 the where the malware detector is being used the false positive and
 negative rate can be tweaked to requirements by altering the set of
 signatures and how they are generated. The approach of detecting malware
@@ -803,7 +806,7 @@ counter these obfuscations approaches which use control flow patterns as
 signatures have been developed\autocite{Bonfante:2007th}. The idea is
 that whilst some sub-expressions may be rearranged the algorithms
 themselves cannot be so dramatically changed. These approaches have been
-relatively succesful at detecting polymorphic malware
+relatively successful at detecting polymorphic malware
 \autocite{Kang:2011bs}\autocite{Bruschi:vb}. Another approach is to use
 model checking to try and identify sections of code that copy the
 instruction sequences to different locations or which use suspicious
@@ -852,7 +855,7 @@ malware does.
   MIPS\autocite{MIPSTechnologiesInc:2011ta}, X86 and XS1 extensively
   throughout the project but also made use of the ARM and Thumb
   Instruction Set Quick Reference Card\autocite{Limited:vc} and X86
-  Opcode reference\autocite{refx86}.
+  Opcode reference{[}@refX86{]}.
 \end{itemize}
 \chapter{Execution}
 
@@ -904,9 +907,9 @@ For example consider these entries from the database:
 Architecture & Instruction Prefix & Instruction Suffix & Bytecode
 Prefix & Bytecode Suffix
 \ML
-x86 & PUSH \%rax & POP \%rax & 50 & 58
+X86 & PUSH \%rax & POP \%rax & 50 & 58
 \\\noalign{\medskip}
-x86 & NOP &  & 90 & 
+X86 & NOP &  & 90 & 
 \LL
 }
 
@@ -993,7 +996,7 @@ which unfortunately means that there are a lot of them and they can be
 very long. An interesting side point here is that there are quite a lot
 of tools out there to detect Java dead code sequences: such as
 DCD\autocite{Vermat:wk} and UCD\autocite{Spieler:uz}. The JDK hotspot
-compiler can optimize deadcode sequences away\autocite{Goetz:ua}. It
+compiler can optimize dead code sequences away\autocite{Goetz:ua}. It
 would be an interesting problem to see how rare dead code sequences are
 in regular compiled code (i.e.~programs from Java code rather than
 handwritten JVM bytecode). Dead code elimination is a common
@@ -1079,7 +1082,7 @@ Its easy to find a four byte PIP header for the little and big endian
 variants of the MIPS architecture by using this instruction. If we
 switch the endianess of the instruction and then remove all the $\cdot$s
 that overlap with a fixed bit we find that a jump instruction for both
-MIPS endiannesses has the form in binary of:
+MIPS endianesses has the form in binary of:
 \[\mathtt{000010\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot\cdot000010\cdot\cdot}\]
 Where $\cdot$ indicates either a 1 or a 0. If we convert this sequence
 to hexadecimal we get the set of four byte PIP headers for different
@@ -1122,8 +1125,8 @@ programs and the percentage of the total program that they occupy. The
 programs \emph{cat, echo and ls} and small UNIX utilities. \emph{Hello}
 is the hello-world program written in C. \emph{Clang} is a C compiler;
 \emph{nasm} is an assembler and \emph{pandoc} is a Haskell based
-markdown compiler. \emph{Linux-2.6} is the linux kernel and
-\emph{mach\_kernel} is a version of the mach kernel by Carnegie Mellon
+markdown compiler. \emph{Linux-2.6} is the Linux kernel and
+\emph{mach\_kernel} is a version of the Mach kernel by Carnegie Mellon
 University found in Apple's MacOS Lion., pos = H, center, botcap]{lllll}
 {% notes
 }
@@ -1190,15 +1193,15 @@ gadgets one instruction in length, however since each each gadget would
 feature a PIP header this would likely destroy any steganographic
 properties the author want in their program. Because PIP headers are
 rare; a program with execution based steganography could be
-distinguished from a plaintext by counting the number of PIP headers
-that could be found and deciding whether that number is statistially
+distinguished from a plain text by counting the number of PIP headers
+that could be found and deciding whether that number is statistically
 significant. When an author is trying to hide X86 behaviour this is a
 much bigger problem as the number of PIP headers that could be expected
 to turn up naturally in a program is very low.
 
 \subsection{Detecting With Static Analysis}
 
-If including several PIP headers and spliting the program into lots of
+If including several PIP headers and splitting the program into lots of
 small sections is going to remove steganographic properties what about
 using fewer gadgets and having longer section of platform specific code?
 The problem with this approach is that it becomes very susceptible to
@@ -1219,7 +1222,7 @@ MIPS and X86., pos = H, center, botcap]{ll}
 }
 {% rows
 \FL
-Hexidecimal & Characters
+Hexadecimal & Characters
 \ML
 \texttt{7f454c46 01010100 00000000 00000000} & \texttt{\frenchspacing .ELF............}
 \\\noalign{\medskip}
@@ -1251,16 +1254,16 @@ Hexidecimal & Characters
 \\\noalign{\medskip}
 \texttt{000000ef 0000a0e1 48656c6c 6f20576f} & \texttt{\frenchspacing ........Hello Wo}
 \\\noalign{\medskip}
-\texttt{726c640a} & \texttt{\frenchspacing rld.           }
+\texttt{726c640a} & \textbackslash{}texttt\{\frenchspacing rld. \$\}
 \LL
 }
 
 If we ignore that the program has the text \emph{Hello world} three
-times in the bytecode the program might not be immediately suspcious.
+times in the bytecode the program might not be immediately suspicious.
 The program only uses one platform independent section to split the
 code, so it isn't particularly suspicious by counting PIP headers. If we
-diassemble the code, however, it starts to become far more suspicious.
-In Listing 5.1 a section of the program dissassembled for X86
+disassemble the code, however, it starts to become far more suspicious.
+In Listing 5.1 a section of the program disassembled for X86
 architecture. Two system calls (the \lstinline!int 0x80!) are clearly
 made\autocite{Kerrisk:vo}. Before each system call arguments are loaded
 such that the first is a write operation, and the second is an exit.
@@ -1280,7 +1283,7 @@ exit:
         inc eax
         int 0x80
 \end{lstlisting}
-If we disassember the program in Table 5.6 as an ARM program (as shown
+If we disassembler the program in Table 5.6 as an ARM program (as shown
 in Listing 5.2) however we can quickly find an equivalent section of
 code. Again this is all valid ARM code and it obviously does a write
 system call followed by an exit. It's in the PIP too so the PIP must
@@ -1331,7 +1334,7 @@ code give the game away as well; is there any way to use PIPs without
 destroying the steganographic properties? Several techniques have been
 developed for creating analysis resistant
 malware\autocite{Bethencourt:2008ug} which could equally be applied to
-resisting PIP detection. Using signaures is relatively primative
+resisting PIP detection. Using signatures is relatively primitive
 technique for detecting malware\autocite{Zhang:2007jy} and several
 techniques have been developed which can evade it as well as improve
 upon it.
@@ -1374,15 +1377,15 @@ less available research on the topic.
 
 \section{Writing Programs with PIPs}
 
-To demonstrate PIPs I created a shellcode (shown in Listing 5.4) for the
-MIPS and X86 architectures using existing platform specific shellcodes
-by Richard Imrigan\autocite{Imrigan:vg} and
-TheWorm\autocite{TheWorm:vp}. The shellcode uses a single PIP header
+To demonstrate PIPs I created a shell code (shown in Listing 5.4) for
+the MIPS and X86 architectures using existing platform specific shell
+codes by Richard Imrigan\autocite{Imrigan:vg} and
+TheWorm\autocite{TheWorm:vp}. The shell code uses a single PIP header
 which would also allow this PIP to be valid for the ARM architecture if
 it were extended further.
 
 \begin{lstlisting}[basicstyle=\tt, , mathescape=true, ,
-caption=An example of a shellcode PIP for X86 and MIPS which attempts to spawn a shell and elevate permissions.  Shellcode for each architecture was taken from \autocite{Imrigan:vg}\autocite{TheWorm:vp}.]
+caption=An example of a shell code PIP for X86 and MIPS which attempts to spawn a shell and elevate permissions.  Shellcode for each architecture was taken from \autocite{Imrigan:vg}\autocite{TheWorm:vp}.]
 eb020008 00000000 6a175831 dbcd80b0 80b02ecd 806a0b58 9952682f 2f736868
 2f62696e 89e35253 89e1cd80 00000000 00000000 00000000 00000000 00000000
 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
@@ -1391,8 +1394,14 @@ eb020008 00000000 6a175831 dbcd80b0 80b02ecd 806a0b58 9952682f 2f736868
 00000000 00000000 2806ffff 3c0f2f2f 35ef6269 afaffff4 3c0e6e2f 35ce7368
 afaefff8 afa0fffc 27a4fff4 2805ffff 24030fab 0101010c 
 \end{lstlisting}
-Clearly the shellcode is far from ideal. A decompilation of the PIP
-header can be seen in Table 5.7
+Clearly the shell code is far from ideal. A decompilation of the PIP
+header can be seen in Table 5.7, but an immediately obvious flaw is that
+the PIP header used has a nil byte in it. Even discarding the long
+sequence of nil bytes in the middle of the program (which could be
+filled with any value as it is not executed) the shell code is long.
+This really isn't a particularly effective bit of shell code. The
+earlier shell code in Table 5.6 was much shorter; so why is this one so
+much longer?
 
 \ctable[caption = Decompilation of the PIP header used in Listing 5.4,
 pos = H, center, botcap]{ll}
@@ -1412,6 +1421,8 @@ MIPS Disassembly & \lstinline!j 0x100000bac; nop;!
 ARM Disassembly (unsused) & \lstinline!bl 0x100080028; andeq r0, r0, r0!
 \LL
 }
+
+\subsection{Liveness and PIPs}
 
 \chapter{Conclusion}
 
