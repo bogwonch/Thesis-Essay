@@ -1,6 +1,7 @@
 \documentclass[$if(fontsize)$$fontsize$,$endif$$if(lang)$$lang$,$endif$]{$documentclass$}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
+\usepackage{microtype}
 \usepackage{fixltx2e} % provides \textsubscript
 \linespread{1.3}
 \ifxetex

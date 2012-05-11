@@ -26,4 +26,6 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {table}{\numberline {5.7}{\ignorespaces Decompilation of the PIP header used in Listing 5.4}}{45}{table.5.7}
 \defcounter {refsection}{0}\relax 
+\contentsline {table}{\numberline {5.8}{\ignorespaces A PIP header that shows how liveness analysis can be used to find more PIPs.}}{47}{table.5.8}
+\defcounter {refsection}{0}\relax 
 \addvspace {10\p@ }

@@ -10,8 +10,7 @@ all: Thesis.md
 		--bibliography=Thesis.bib             \
 		--biblatex                            \
 		--template=default.latex              \
-		-V fontsize=10pt                      \
-		-V mainfont="Fanwood Text"
+		-V fontsize=10pt                      
 
 	${latex} Thesis
 	bibtex Thesis

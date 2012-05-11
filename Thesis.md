@@ -446,7 +446,7 @@ To test the steganographic properties of PIPs I looked at how often they occur i
 
 [^whicharm]: Specifically the ARM 7 32-bit architecture known as AArch32 not the new shiny 64-bit one.
 
-For the ARM architecture I focussed on *app-like* programs.  I looked at a variety of apps from games to text editors as well as a sequence of random bytes and a Gameboy advance game.  The Gameboy game is interesting as it also contains sound and graphics files built into it that the iOS applications do not.  The results are shown in Table 5.4.  The results seem to show that PIP headers very rarely turn up in ARM code; less than 0.1% typically.  Some PIP headers turn up for the ARM little endian and MIPS architectures, but next to none ever turn up for X86 PIP headers in ARM little endian programs.  It would be surprising if more that ten turned up in any program.  Another interesting point is that PIP headers don't appear to turn up in programs more often than they do in a random sequence of code. For X86 we see similar results (Table 5.5).  I looked at a range of program from very simple C programs and system utilities, to compilers and two operating system kernels.  Again we see that NOPs turn up very rarely in bytecode, 
+For the ARM architecture I focused on *app-like* programs.  I looked at a variety of apps from games to text editors as well as a sequence of random bytes and a Gameboy advance game.  The Gameboy game is interesting as it also contains sound and graphics files built into it that the iOS applications do not.  The results are shown in Table 5.4.  The results seem to show that PIP headers very rarely turn up in ARM code; less than 0.1% typically.  Some PIP headers turn up for the ARM little endian and MIPS architectures, but next to none ever turn up for X86 PIP headers in ARM little endian programs.  It would be surprising if more that ten turned up in any program.  Another interesting point is that PIP headers don't appear to turn up in programs more often than they do in a random sequence of code. For X86 we see similar results (Table 5.5).  I looked at a range of program from very simple C programs and system utilities, to compilers and two operating system kernels.  Again we see that NOPs turn up very rarely in bytecode, 
 
 In Brumley et. al.'s paper[@Cha:2010uh] they suggest that whole platform independent programs could be created by splitting the program into several *gadgets* each with a PIP header and a block of code to be executed for each platform the program author wishes to target.  Brumley et. al. go on to suggest that a program could be split up into gadgets one instruction in length, however since each each gadget would feature a PIP header this would likely destroy any steganographic properties the author want in their program.   Because PIP headers are rare; a program with execution based steganography could be distinguished from a plain text by counting the number of PIP headers that could be found and deciding whether that number is statistically significant.  When an author is trying to hide X86 behaviour this is a much bigger problem as the number of PIP headers that could be expected to turn up naturally in a program is very low.  
 
@@ -552,7 +552,7 @@ eb020008 00000000 6a175831 dbcd80b0 80b02ecd 806a0b58 9952682f 2f736868
 afaefff8 afa0fffc 27a4fff4 2805ffff 24030fab 0101010c 
 ````
 
-Clearly the shell code is far from ideal.  A decompilation of the PIP header can be seen in Table 5.7, but an immediately obvious flaw is that the PIP header used has a nil byte in it.  Even discarding the long sequence of nil bytes in the middle of the program (which could be filled with any value as it is not executed) the shell code is long.  This really isn't a particularly effective bit of shell code.  The earlier shell code in Table 5.6 was much shorter; so why is this one so much longer?
+The shell code is far from ideal.  A decompilation of the PIP header can be seen in Table 5.7, but an immediately obvious flaw is that the PIP header used has a nil byte in it.  Even discarding the long sequence of nil bytes in the middle of the program (which could be filled with any value as it is not executed) the shell code is long.  This really isn't a particularly effective bit of shell code.
 
   Description                Value
   -------------------------  --------------------------------------------------------------
@@ -563,11 +563,47 @@ Clearly the shell code is far from ideal.  A decompilation of the PIP header can
 
   : Decompilation of the PIP header used in Listing 5.4
 
+One reason it is so much longer is that it is difficult to find PIPs that have short jumps for multiple architectures.  It is reasonably easy to find a PIP header that will jump to two reasonably close instructions but quite difficult to find a PIP header that will jump to two extremely close instructions.  This need not be that much of a problem.  Most programs are longer than shellcode.   In a longer program more of the empty space could be utilised and filled by program code or by using more PIP headers so there would be less wasted space.
 
-### Liveness and PIPs
+### Liveness And PIPs
+
+An alternative method would be to increase the number of available PIP headers by allowing a PIP to change the state of the processor.  A PIP could modify the state of a register or update status flags if the PIP author knew that the flags or the register wasn't being used at that stage in the program. 
+
+Liveness analysis is a technique used by compiler designers to decide which variables are being used by a program[@Aho:2007tt].  In all the PIPs I found I made the assumption that all registers and flags were being used at every stage of the program.  Whilst this ensures that PIP header are safe to be used at any point in a program it does restrict the number of PIPs we can find. 
+
+Consider the example shown in Table 5.8.  For the ARM architecture it does a jump, but for the X86 architecture it does two additions.  Normally we would reject this as a PIP header as an it alters the contents of the `al`, `dl` and `flags` registers.  If we knew, however, that the next few instructions for X86 updated `al` and `dl` anyway[^x86updatingcode] it would not matter that we had altered the value.  We would have added a redundant transform[@Collberg:1997vt], but we would have also added PIP behavior that we would not have previously been able to accept.
+
+[^x86updatingcode]: For example the write system call from earlier: 
+
+	 `xor ebx, ebx; inc ebx; mov ecx, [esp]; mov edx, 0xc; mov eax, 0x4; int 0x80`
+		
+  Description               Value                         Altered Registers
+  ------------------------- ----------------------------  ------------------
+  Bytecode                   `020000ea` 
+  ARM Decompilation          `b 0x12`                     `pc`
+  X86 Decompilation          `add al, [eax]; add dl, ch`  `al, dl, flags`
+
+  : A PIP header that shows how liveness analysis can be used to find more PIPs.
+
+To implement this scheme we would need two things: a liveness analyser to be able tell which registers are safe to alter in the section of code we want to add PIP behaviour to; and an extended list of PIP headers which detail which registers a PIP alters.  We still need to be careful about altering certain registers (such as the stack pointer) or triggering exceptions (perhaps by invalid code or overflow) but we're gaining a lot more freedom and should be able to find more PIP headers; all though more care would be required to use them.  Brumley have implemented this in their PIP system, however they do not provide any implementation details[@Cha:2010uh].  Again it would be interesting to see how often PIP headers of this form turn up in natural code: probably more often.
+
+
+
 
 Conclusion 
 ========== 
+
+What I Did
+----------
+
+What Is Still To Be Done
+------------------------
+
+
+
+
+
+
 
 \appendix
 
