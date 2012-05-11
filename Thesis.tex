@@ -21,6 +21,13 @@
 \bibliography{Thesis}
 \usepackage{listings}
 \usepackage{fancyvrb}
+% Redefine labelwidth for lists; otherwise, the enumerate package will cause
+% markers to extend beyond the left margin.
+\makeatletter\AtBeginDocument{%
+  \renewcommand{\@listi}
+    {\setlength{\labelwidth}{4em}}
+}\makeatother
+\usepackage{enumerate}
 \usepackage{ctable}
 \usepackage{float} % provides the H option for float placement
 \ifxetex
@@ -1489,9 +1496,32 @@ code: probably more often.
 
 \chapter{Conclusion}
 
-\section{What I Did}
+For this project I have:
 
-\section{What Is Still To Be Done}
+\begin{enumerate}[1.]
+\item
+  Analyzed the ARM, X86, MIPS and XS1 instruction sets for semantic NOPS
+  and contributed a publicly available list of semantic NOP instructions
+  for each. I looked at the problems with trying to find semantic NOPs
+  for the JVM.
+\item
+  Recreated a subset of the PIP research done by \autocite{Cha:2010uh}
+  and created a list of four and eight byte PIP headers between the ARM,
+  X86 and MIPS instruction sets.
+\item
+  Created a novel PIP using the headers and discussed the problems with
+  not using liveness analysis to find PIP headers.
+\item
+  I analyzed the frequency PIP headers turn up in non-PIP code for X86
+  and ARM programs to evaluate the steganographic properties of
+  PIPs---something that has never been done before. I concluded that
+  there may be problems with the approach suggested by
+  \autocite{Cha:2010uh} if an author wanted steganographic properties in
+  PIPs and suggested techniques to overcome the problems.
+\end{enumerate}
+\section{Current Status}
+
+\section{Open Problems}
 
 \appendix
 

@@ -593,11 +593,20 @@ To implement this scheme we would need two things: a liveness analyser to be abl
 Conclusion 
 ========== 
 
-What I Did
-----------
+For this project I have:
 
-What Is Still To Be Done
-------------------------
+  1. Analyzed the ARM, X86, MIPS and XS1 instruction sets for semantic NOPS and contributed a publicly available list of semantic NOP instructions for each.  I looked at the problems with trying to find semantic NOPs for the JVM.
+  2. Recreated a subset of the PIP research done by [@Cha:2010uh] and created a list of four and eight byte PIP headers between the ARM, X86 and MIPS instruction sets.
+  3. Created a novel PIP using the headers and discussed the problems with not using liveness analysis to find PIP headers.
+  4. I analyzed the frequency PIP headers turn up in non-PIP code for X86 and ARM programs to evaluate the steganographic properties of PIPs—something that has never been done before.  I concluded that there may be problems with the approach suggested by [@Cha:2010uh] if an author wanted steganographic properties in PIPs and suggested techniques to overcome the problems.
+
+Current Status
+--------------
+
+
+
+Open Problems
+-------------
 
 
 
