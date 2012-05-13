@@ -63,8 +63,11 @@
 
 \widowpenalty=300
 \clubpenalty=300
+\usepackage{epigraph}
 \begin{document}
 \maketitle
+
+\epigraph{\textsf{``{.}{.}{.}a large, flat space to spread out the architecture reference manuals, and an ample supply of caffeine. Do not underrate the second part."}}{}
 
 \tableofcontents
 \listoftables
@@ -303,7 +306,7 @@ versions.
 The problem is that although PIPs could be used to write architecture
 independent programs, there are more elegant solutions available than
 relying on the intersection of instruction sets between architectures.
-There are a couple of preexisting systems for doing this such as Apple's
+There are several preexisting systems for doing this such as Apple's
 \emph{Universal Binary} or the \emph{FatELF}\autocite{Icculus:vl}
 format. Another problem is that for some operating systems this just
 would not work: Linux normally uses the ELF format\autocite{mancx:th}
@@ -553,8 +556,8 @@ For example on the ARM architecture\autocite{Seal:2000vd} the
 \lstinline!NOP! instruction is assembled into the bytecode
 \lstinline!e1a00000!. The instruction \lstinline!mov r0, r0! is also
 assembled to \lstinline!e1a00000!. Because they have the same bytecode
-we can see that these two instructions are actually one and the same.
-The designers of the architecture chose to replace the \lstinline!NOP!
+we can see that these two instructions are actually the same. The
+designers of the architecture chose to replace the \lstinline!NOP!
 instruction with a functionally equivalent one in the bytecode format.
 This is done (amongst other reasons) to compress the instruction set.
 Here the \lstinline!mov r0, r0! instruction is the \lstinline!NOP!
@@ -912,7 +915,7 @@ Around nineteen million semantic NOP sequences for the ARM, MIPS, X86
 and XS1 architectures were identified and stored in a database of the
 form:
 
-\[\text{\sc Semantic-NOPs}\left( 
+\[\text{\textsc{Semantic-NOPs}}\left( 
 \text{\underline{architecture}}, 
 \text{instruction prefix}, 
 \text{instruction suffix},
@@ -947,8 +950,8 @@ instruction. Equally the sequence \lstinline!push %rax; pop %rax! is a
 semantic NOP sequence with bytecode \lstinline!5058!. For the
 \lstinline!push!-\lstinline!pull! sequence we can place any code in
 between the \lstinline!push! and the \lstinline!pull!. If that sequence
-is a semantic NOP too then the sequence as a whole is a semantic NOP
-also. So \lstinline!509058! is a semantic NOP; as is
+is a semantic NOP too then the sequence as a whole is a semantic NOP as
+well. So \lstinline!509058! is a semantic NOP; as is
 \lstinline!50909058!; or ever \lstinline!5050905858!.
 
 Looking at the numbers found in Table 5.1 the MIPS architecture is by
@@ -1021,9 +1024,9 @@ the \lstinline!pop! (\lstinline!57!) or \lstinline!pop_2!
 (\lstinline!58!) instructions) any additional values back off at the end
 and make sure there are enough useless values on the stack initially so
 as not to alter any pre-existing ones. Any dead-code program will work,
-which unfortunately means that there are a lot of them and they can be
-very long. An interesting side point here is that there are quite a lot
-of tools out there to detect Java dead code sequences: such as
+which unfortunately means that there are many and they can be very long.
+An interesting side point here is that there are quite a lot of tools
+out there to detect Java dead code sequences: such as
 DCD\autocite{Vermat:wk} and UCD\autocite{Spieler:uz}. The JDK hotspot
 compiler can optimize dead code sequences away\autocite{Goetz:ua}. It
 would be an interesting problem to see how rare dead code sequences are
@@ -1218,7 +1221,7 @@ platform independent programs could be created by splitting the program
 into several \emph{gadgets} each with a PIP header and a block of code
 to be executed for each platform the program author wishes to target.
 Brumley et. al. go on to suggest that a program could be split up into
-gadgets one instruction in length, however since each each gadget would
+gadgets one instruction in length, however since each gadget would
 feature a PIP header this would likely destroy any steganographic
 properties the author want in their program. Because PIP headers are
 rare; a program with execution based steganography could be
@@ -1607,7 +1610,7 @@ verified easily.
 
 A problem I encountered finding the PIP headers was the time and space
 complexities. Brumley et. al. managed to find twelve byte
-headers\autocite{Cha:2010uh} where as I stopped at eight. Each of the
+headers\autocite{Cha:2010uh} whereas I stopped at eight. Each of the
 files storing the four byte PIPs can be measured in bytes. For eight
 byte PIPs this raises to kilobytes and megabytes. Attempts to generate
 twelve byte PIPs lead to files with sizes in gigabytes before I stopped

@@ -156,14 +156,16 @@ $endif$
 
 \widowpenalty=300
 \clubpenalty=300
+\usepackage{epigraph}
 \begin{document}
 $if(title)$
 \maketitle
 $endif$
 
+\epigraph{\textsf{``{.}{.}{.}a large, flat space to spread out the architecture reference manuals, and an ample supply of caffeine. Do not underrate the second part."}}{}
+
 $for(include-before)$
 $include-before$
-
 $endfor$
 $if(toc)$
 \tableofcontents
