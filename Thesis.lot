@@ -24,8 +24,10 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {table}{\numberline {5.6}{\ignorespaces A PIP containing a \emph {Hello World} program for ARM MIPS and X86.}}{41}{table.5.6}
 \defcounter {refsection}{0}\relax 
-\contentsline {table}{\numberline {5.7}{\ignorespaces Decompilation of the PIP header used in Listing 5.4}}{45}{table.5.7}
+\contentsline {table}{\numberline {5.7}{\ignorespaces Decompilation of the PIP header used in Listing 5.4}}{46}{table.5.7}
 \defcounter {refsection}{0}\relax 
 \contentsline {table}{\numberline {5.8}{\ignorespaces A PIP header that shows how liveness analysis can be used to find more PIPs.}}{47}{table.5.8}
 \defcounter {refsection}{0}\relax 
 \addvspace {10\p@ }
+\defcounter {refsection}{0}\relax 
+\contentsline {table}{\numberline {6.1}{\ignorespaces Incomplete table of PIPs found for the XS1 architecture.}}{50}{table.6.1}

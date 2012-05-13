@@ -1,12 +1,16 @@
 % Platform Independent Programs
-% Joseph Hallett
+% Joseph Hallett\thanks{With thanks to Dr. Daniel Page for supervising the project and to Will Williams and Jake Longo for listening to me rant about PIPs and bytecode all year.}
 % \today
 
 
 Executive Summary
 =================
 
-This is where the executive summary will go... but there is not one yet.
+*Platform Independent Programs* (PIPs) are a new type of program whose bytecode can be run on multiple architectures without modification.  It works by exploiting overlaps in machine code formats between architectures to create small sequences of code called PIP headers that jump to different places depending on which architecture runs them.  By chaining the PIP headers with jumps to platform specific code you can construct whole programs that run on multiple architectures.  
+
+I created a database of semantic NOP instructions for the ARM, MIPS, X86 and XS1 architectures and used it to find PIP headers for the ARM, MIPS and X86 platforms and to show the technique is also possible on XS1.  I looked at the steganographic properties of PIPs and the occurrences of PIP headers in non PIP programs.  I determined that using repeated PIP headers would lead to a PIP that was easily distinguished from a non PIP by statistical methods.  I suggested other methods to create PIPs that couldn't be detected by a signature based scheme by using metamorphism, encryption, and microcode updates.  I created an example shellcode using a PIP header that highlighted the need for some form of static analysis to be introduced to the PIP header generation routine to fully utilize PIPs.
+
+
 
 Introduction
 ============
@@ -65,7 +69,7 @@ Applications Of PIPs
 
 PIPs can be used for a variety of applications.  One potential application suggested by Brumley et. al.[@Cha:2010uh] is for sneaking programs past dynamic execution checkers.  Suppose two prisoners *Alice* & *Bob*, wish to send a malicious program between themselves.  To send the message they have to send it through a *Warden* who checks first that there communications don't contain anything malicious and only delivers the message if its believed to be harmless. 
 
-To sneak the program Alice and Bob use a form of *keyed-steganography*[^PIPsteg].  The program which they wish to communicate becomes their *steg-text*, and they construct a *cover-text* by writing some other program which does not contain anything malicious.   They either pre-arrange a shared secret which is the platform that their programs should really be run on: this forms the key.   With the cover-text and steg-text created they create their message by generating them into a PIP where on one platform (X86 say) it appears to run the innocuous program and on the secret key platform (ARM for the sake of argument) it runs the program they really wish to communicate.  Alice hands the warden the program and tells him that it is for the innocuous architecture[^PIParchs].  The warden runs the program and sees it is not something he would want to restrict and delivers it.  In fact unless he is aware that it has been in constructed in this way he may not even check any other architectures as for most platforms it will appear to be garbage just like any normal executable. 
+Steganography is the science of hiding information[@Gordon:vw].  It has been used in parallel with cryptography to hide messages in seemingly innocuous documents[@Saamuson:wt], to circumvent bans on cryptography[@Owens:2002uq], and to implement watermarking[@Wayner:2009vw]. To sneak the program Alice and Bob use a form of *keyed-steganography*[^PIPsteg].   The program which they wish to communicate becomes their *steg-text*, and they construct a *cover-text* by writing some other program which does not contain anything malicious.   They either pre-arrange a shared secret which is the platform that their programs should really be run on: this forms the key.   With the cover-text and steg-text created they create their message by generating them into a PIP where on one platform (X86 say) it appears to run the innocuous program and on the secret key platform (ARM for the sake of argument) it runs the program they really wish to communicate.  Alice hands the warden the program and tells him that it is for the innocuous architecture[^PIParchs].  The warden runs the program and sees it is not something he would want to restrict and delivers it.  In fact unless he is aware that it has been in constructed in this way he may not even check any other architectures as for most platforms it will appear to be garbage just like any normal executable. 
 
 A more real world example of this is to consider the relationship between computers (usually using an X86 processor) and modern smart phones (which often use ARM processors) running *apps*.  The computer often stores backups of the applications used on the smartphone.  Apple's iTunes program, for example, stores all the mobile applications associated with a user in it is library folder as zip-compressed archives.  Suppose an attacker were to construct a program which was a lignite application on the ARM platform but when run on X86 behaved as a form of malware. The computer might have some form of anti-malware software, but unless it knows to scan the mobile applications as potential X86 viruses rather than the ARM ones they identify themselves as (and which are not ARM malware) then the anti-malware program might miss the dangerous code.
 
@@ -301,20 +305,15 @@ Various toolchains have been developed to aid detecting malware.  The Binary Ana
 
 
 
-Tool-Chains Used
-----------------
-
-
-
 Components
 ==========
 
- * I used the GNU compiler toolchains for ARM, MIPS, X86 to assemble lists of semantic NOPs.
+ * I used the GNU compiler toolchains[@Binutils:2006tc] for ARM, MIPS, X86 to assemble lists of semantic NOPs.
  * I used the XMOS toolchain to assemble lists of semantic NOPs for the XS1 architecture.
- * I used the Jasmine assembler to explore writing semantic NOPs for the JVM.
- * I used the Radare 2 framework to write semantic NOPs and jumps with don't care bytes for ARM, MIPS and X86 as well as to verify the PIPs at the end.  I also used its JVM dissasembler and assembler to explore the JVM for creating PIPs.
+ * I used the Jasmine assembler[@Meyer:1996vx] to explore writing semantic NOPs for the JVM.
+ * I used the Radare 2 framework[@radarenopcodeorg:vw] to write semantic NOPs and jumps with don't care bytes for ARM, MIPS and X86 as well as to verify the PIPs at the end.  I also used its JVM dissasembler and assembler to explore the JVM for creating PIPs.
  * I used Ruby and Haskell to write various tools to create the PIPs.
- * I refered to the architecture manuals for ARM, MIPS[@MIPSTechnologiesInc:2011ta], X86 and XS1 extensively throughout the project but also made use of the ARM and Thumb Instruction Set Quick Reference Card[@Limited:vc] and X86 Opcode reference[@refX86].
+ * I refered to the architecture manuals for ARM[@Seal:2000vd], MIPS[@MIPSTechnologiesInc:2011ta], X86[@IntelCorporation:1997ta] and XS1[@May:ua] extensively throughout the project but also made use of the ARM and Thumb Instruction Set Quick Reference Card[@Limited:vc] and X86 Opcode reference[@refX86].
 
 
 Execution
@@ -448,7 +447,9 @@ To test the steganographic properties of PIPs I looked at how often they occur i
 
 For the ARM architecture I focused on *app-like* programs.  I looked at a variety of apps from games to text editors as well as a sequence of random bytes and a Gameboy advance game.  The Gameboy game is interesting as it also contains sound and graphics files built into it that the iOS applications do not.  The results are shown in Table 5.4.  The results seem to show that PIP headers very rarely turn up in ARM code; less than 0.1% typically.  Some PIP headers turn up for the ARM little endian and MIPS architectures, but next to none ever turn up for X86 PIP headers in ARM little endian programs.  It would be surprising if more that ten turned up in any program.  Another interesting point is that PIP headers don't appear to turn up in programs more often than they do in a random sequence of code. For X86 we see similar results (Table 5.5).  I looked at a range of program from very simple C programs and system utilities, to compilers and two operating system kernels.  Again we see that NOPs turn up very rarely in bytecode, 
 
-In Brumley et. al.'s paper[@Cha:2010uh] they suggest that whole platform independent programs could be created by splitting the program into several *gadgets* each with a PIP header and a block of code to be executed for each platform the program author wishes to target.  Brumley et. al. go on to suggest that a program could be split up into gadgets one instruction in length, however since each each gadget would feature a PIP header this would likely destroy any steganographic properties the author want in their program.   Because PIP headers are rare; a program with execution based steganography could be distinguished from a plain text by counting the number of PIP headers that could be found and deciding whether that number is statistically significant.  When an author is trying to hide X86 behaviour this is a much bigger problem as the number of PIP headers that could be expected to turn up naturally in a program is very low.  
+In Brumley et. al.'s paper[@Cha:2010uh] they suggest that whole platform independent programs could be created by splitting the program into several *gadgets* each with a PIP header and a block of code to be executed for each platform the program author wishes to target.  Brumley et. al. go on to suggest that a program could be split up into gadgets one instruction in length, however since each each gadget would feature a PIP header this would likely destroy any steganographic properties the author want in their program.   Because PIP headers are rare; a program with execution based steganography could be distinguished from a plain text by counting the number of PIP headers that could be found and deciding whether that number is statistically significant.  When an author is trying to hide X86 behaviour this is a much bigger problem as the number of PIP headers that could be expected to turn up naturally in a program is very low.  This suggests an easy way to implement a detector: if the number of PIP headers in a program is uncharacteristically high predict that the program has some PIP behavior.
+
+
 
 ### Detecting With Static Analysis
 
@@ -522,11 +523,14 @@ exit:
         syscall
 ````
 
+This means that if we were to use the number of PIP headers in a program as a metric, we should be able to construct a PIP detector where a greater number of PIP headers would indicate increased confidence in the program being a PIP.  In [@Cha:2010uh] they suggest splitting a program into as many PIP sections as there are lines of code.  If this was actually tried, however, a detector could be constructed to look for PIP headers and due to the large number of them should be able to distinguish PIP from non PIP—or at least do it better than a random oracle or ESP-RNG running in predict mode[@Birkett:vw].
 
 
 ### Hiding PIP Code
 
-Given that excessive use of PIP headers appears to make it obvious when a program is a PIP and that having long sequences of platform specific code give the game away as well; is there any way to use PIPs without destroying the steganographic properties?  Several techniques have been developed for creating analysis resistant malware[@Bethencourt:2008ug] which could equally be applied to resisting PIP detection.  Using signatures is relatively primitive technique for detecting malware[@Zhang:2007jy] and several techniques have been developed which can evade it as well as improve upon it.
+Given that excessive use of PIP headers appears to make it obvious when a program is a PIP and that having long sequences of platform specific code give the game away as well; is there any way to use PIPs without destroying the steganographic properties?  Several techniques have been developed for creating analysis resistant malware[@Bethencourt:2008ug] which could equally be applied to resisting PIP detection.  Using signatures is relatively primitive technique[^dino] for detecting malware[@Zhang:2007jy] and several techniques have been developed which can evade it as well as improve upon it.
+
+[^dino]: Whilst signatures are somewhat of a dinosaur[@Lull:1910tz] of a technique they are still an effective technique for detecting malware and still very actively used though they do not always looks just at bytecode snippets anymore.[@Acosta:wz][@Liang:2011va]
 
 One approach is to use encryption.  The program code is stored inside the program as data but at run time the program decrypts it back to executable code[@Royal:2006ug].  This resists static analysis because the section of code we would want to analyze can't be read without decryption.  Unless we can recover the key and know how to decrypt the program we might not be able to spot the PIP behaviour.  Of course to do the decryption on multiple platforms we're either going to need a PIP malware extractor but if this can be written using less PIP headers than the full program then it might be a way forward.  
 
@@ -593,6 +597,9 @@ To implement this scheme we would need two things: a liveness analyser to be abl
 Conclusion 
 ========== 
 
+Current Status
+--------------
+
 For this project I have:
 
   1. Analyzed the ARM, X86, MIPS and XS1 instruction sets for semantic NOPS and contributed a publicly available list of semantic NOP instructions for each.  I looked at the problems with trying to find semantic NOPs for the JVM.
@@ -600,19 +607,60 @@ For this project I have:
   3. Created a novel PIP using the headers and discussed the problems with not using liveness analysis to find PIP headers.
   4. I analyzed the frequency PIP headers turn up in non-PIP code for X86 and ARM programs to evaluate the steganographic properties of PIPs—something that has never been done before.  I concluded that there may be problems with the approach suggested by [@Cha:2010uh] if an author wanted steganographic properties in PIPs and suggested techniques to overcome the problems.
 
-Current Status
---------------
+
+### XS1 PIPs
+
+I only partially managed to get the PIP generation algorithm going for the XS1 architecture.  It is certainly possible that PIPs exist for the XS1 architecture.  The short number of semantic NOPs I found for the XS1 architecture (Table 5.1) might be a hindrance to the PIP generation algorithm, however the XS1 architecture has several conditional jump instructions that could be used to create the jumps inside the PIPs: specifically the `BRBF, BRBT, BRFF` and `BRFT` instructions could all be used in their `(ru6)` and `(lru6)` forms as well as the `BRBU` and `BRFU` instruction in their `(u6)` and `(lu6)` forms[@May:ua].
+
+If we restrict the search to XS1 PIPs which use the `BRBU` and `BRFU` instructions we can find some for the XS1 and other architectures (Table 6.1).  This isn't a complete search (and hence why it isn't presented as part of the main results) but it definitely indicates that the XS1 architecture is vulnerable to this technique and is comparable to X86 in terms of susceptibility.
+
+  Size of XS1 section  ARM BE               ARM LE            MIPS BE             MIPS LE            X86
+  -------------------  -------------------  ----------------  ------------------  -----------------  -------------------
+  4 B                  $3.2\times10^4$      $0$               $1.4\times10^5$     0                  $3.3\times10^4$
+
+  : Incomplete table of PIPs found for the XS1 architecture.
+
+Unfortunately these PIPs are also very hard to verify. To check the PIPs for the other architectures I used the Radare2 framework's disassembler[@radarenopcodeorg:vw] to verify the bytecode did what I expected, but the disassembler does not support the XS1 architecture.  Radare does support writing extensions for other architectures—it would be worth writing a back-end for XS1 before doing a full study of the PIPs available for the architecture so that any PIPs found could be verified easily.
+
+
+### Twelve Byte PIP headers
+
+A problem I encountered finding the PIP headers was the time and space complexities.  Brumley et. al. managed to find twelve byte headers[@Cha:2010uh] where as I stopped at eight.  Each of the files storing the four byte PIPs can be measured in bytes.  For eight byte PIPs this raises to kilobytes and megabytes.  Attempts to generate twelve byte PIPs lead to files with sizes in gigabytes before I stopped the program running.  The time to find the PIPs also increases: seconds for four byte; hours for eight bytes; unknown time for twelve byte but measured in days.  I did manage to create lists of potential PIP headers for the ARM, MIPS and X86 architectures of twelve bytes in length.  However I could not successfully reduce these to the actual PIP headers for use with multiple architectures.  Since PIPs could be effectively shown using only eight byte headers I compromised and stopped there.
+
+Parallelism could also be used to improve the PIP finding performance.  Finding PIPs involves recursively joining every possible sequence of semantic NOPs for an architecture with every possible jump for that architecture then comparing two lists for different architectures to find the overlapping ones.  Sections of this could certainly parallelized; the comparison could be done very effectively with OpenCL[@opencl]—a technology I discovered too late to use in this project.
 
 
 
 Open Problems
 -------------
 
+### Extending PIPs To More Architectures
+
+Other architectures can be used to write PIPs and it would be interesting to look at the difficulty for each of them.  Instruction sets such as the new 64 bit ARM would be interesting, as would ARM's THUMB instruction set.  The big architecture to target though has to be the JVM.  
+
+Because the JVM is so different from other architectures, being stack based, it is interesting from a technical point of view to see how effectively PIP generation can be done on it. The other reason the JVM is so tempting is that lots of computers have a lot of Java applications on them.  If you wanted to use PIPs to hide programs on a computer there is a good chance that there would be some Java files that could contain a hidden X86 program as well as the expected JVM bytecode.
 
 
+### Looking at opportunities for using microcode updates to create PIPs
+
+Microcode is a really fascinating subject by itself. It is easy to find a stack of patents regarding systems for updating or installing microcode[@Demke:2000uf][@Tung:2004tm][@Langford:2006uf], but there is less research available on the subject of using it for writing malware.  In Soukis and Zeltser's book [@Skoudis:2004to] they subtitle the chapter on it: *The Possibility of BIOS and Malware Microcode*.  They note in [@Skoudis:2004to] that trying to analyze the data in a microcode update is:
+
+  > "like trying to read a love letter from a Casanova to his lovers, written in a language that you don't understand, encrypted using a crypto algorithm you don't know, protected with an encryption key that you don't have."
+
+Clearly using microcode for PIPs is a non-trivial task, but the pay-off is potentially huge.  You could write a PIP for one system and develop a virus to deliver the microcode update.  If the system has had the microcode update then the hidden PIP behaviour is triggered.  The nice thing about this approach is that you might be able to get a lot of control over which instructions are used for PIP behavior: this would make trying to detect PIPs a lot more interesting as you could introduce PIP behaviour to very common instructions.
 
 
+### Advanced PIPs
 
+A problem with the work I did was that I focussed my attentions on PIP headers that made no modification to the program state.  Whilst these are the ideal form of PIP as they can be used with any block of platform specific code without fear of mucking up its behaviour, but it also restricts the number that can be found.  In a realistic situation a PIP author may know something about the program they are trying to add PIPs to.  They may be able to use a wider range of instructions for their semantic NOPs which end up either as dead code or as a part of their program.  If so then this makes the detection problem more difficult.  I only looked at using the PIPs I studied for my detector and found they didn't really turn up in normal code.  This isn't really that surprising.  The PIPs all used semantic NOPs: dead code.  An optimizing compiler ought to be able to remove these sections without much fuss, and sure enough that is what I found: safe PIPs don't turn up in real code.  I would guess that the PIPs that make use of these more dangerous PIPs turn up a lot more in some kinds of programs as they are closer to real code (i.e. they do something).  That said if the way programs are written doesn't match the structure found in a PIP (which is a little more random with respect to instruction order) then they may still not turn up often.  It would be interesting to study this further.
+
+
+The End
+-------
+
+In conclusion I created a publicly available database of semantic NOPs.  I found four and eight byte PIP headers for the ARM, MIPS and X86 architectures.  I looked at the probability of finding PIP headers in natural code and found that a detector for a PIP program could be written if it used the count of PIP headers as a metric as PIP headers occur rarely in natural code.
+
+PIPs are an interesting upshot of instruction sets utilizing their bytecode efficiently.   More research is needed to be able to explore the possibilities offered by them and to see whether they would be actually useful in practice for malware or steganography; as well as to see how well they could be detected in practice.   It has struck me through out this project how funny it is that these languages we program in eventually compile down to assembly and how that assembly is assembled into a sequence of bits which you would normally think of as being completely incompatible with any other architecture.  The way these architectures are designed there ought to be no compatibility—each designed differently with different goals.  But because it all comes down to bits eventually, and designers are keen not to waste them, there is almost always eventually some overlap.  By exploiting that overlap with a little care and thought suddenly the same sequences of assembly can be realised as two different programs for two different architectures; and suddenly we have PIP behaviour.  It wasn't designed for.  It is a side effect of efficiently designing an instruction set.   But that little side effect lets us write truly platform independent programs.  We can use it for steganography.  We can use it to write malware.  It can be used for some really cool things  and it is just a side effect.  Neat or what?
 
 \appendix
 
