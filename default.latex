@@ -59,6 +59,7 @@ $endif$
 $endif$
 $if(listings)$
 \usepackage{listings}
+\lstset{basicstyle=\footnotesize\ttfamily}
 $endif$
 $if(lhs)$
 \lstnewenvironment{code}{\lstset{language=Haskell,basicstyle=\small\ttfamily}}{}
@@ -158,11 +159,15 @@ $endif$
 \clubpenalty=300
 \usepackage{epigraph}
 \begin{document}
+\includegraphics[width=\linewidth]{Cover.pdf}
+\includegraphics[width=\linewidth]{Declaration.pdf}
+
+
 $if(title)$
 \maketitle
 $endif$
 
-\epigraph{\textsf{``{.}{.}{.}a large, flat space to spread out the architecture reference manuals, and an ample supply of caffeine. Do not underrate the second part."}}{}
+\epigraph{\textsf{``{.}{.}{.}a large, flat space to spread out the architecture reference manuals, and an ample supply of caffeine. Do not underrate the second part."}}{\textsf{Drew Dean}}
 
 $for(include-before)$
 $include-before$

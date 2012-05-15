@@ -5,8 +5,8 @@ all: Thesis.md
 	pandoc -t latex Thesis.md -o Thesis.tex \
 		--standalone                          \
 		--toc                                 \
-		--listings                            \
 		--chapter                             \
+		--listings                            \
 		--bibliography=Thesis.bib             \
 		--biblatex                            \
 		--template=default.latex              \

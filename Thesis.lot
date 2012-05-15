@@ -12,22 +12,22 @@
 \defcounter {refsection}{0}\relax 
 \addvspace {10\p@ }
 \defcounter {refsection}{0}\relax 
-\contentsline {table}{\numberline {5.1}{\ignorespaces Semantic NOP sequences identified per architecture.}}{33}{table.5.1}
+\contentsline {table}{\numberline {5.1}{\ignorespaces Semantic NOP sequences identified per architecture.}}{37}{table.5.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {table}{\numberline {5.2}{\ignorespaces Four byte PIPs found between architectures.}}{36}{table.5.2}
+\contentsline {table}{\numberline {5.2}{\ignorespaces Four byte PIPs found between architectures.}}{40}{table.5.2}
 \defcounter {refsection}{0}\relax 
-\contentsline {table}{\numberline {5.3}{\ignorespaces Eight byte PIPs found between architectures. On top of these results $2.0\times 10^{10}$ were found which were valid for the ARM LE MIPS BE and X86 architectures.}}{37}{table.5.3}
+\contentsline {table}{\numberline {5.3}{\ignorespaces Eight byte PIPs found between architectures. On top of these results $2.0\times 10^{10}$ were found which were valid for the ARM LE MIPS BE and X86 architectures.}}{41}{table.5.3}
 \defcounter {refsection}{0}\relax 
-\contentsline {table}{\numberline {5.4}{\ignorespaces Number of times eight byte PIP headers occur in ARM programs and the percentage of the total program which they occupy. All of the programs listed \emph {apart from Mother 3 and Random} are taken from iPhone applications for Apple's iOS operating system. \emph {Mother 3} is a program for Nintendo's GameBoy Advance. Random is a long string of random bytes.}}{38}{table.5.4}
+\contentsline {table}{\numberline {5.4}{\ignorespaces Number of times eight byte PIP headers occur in ARM programs and the percentage of the total program which they occupy. All of the programs listed \emph {apart from Mother 3 and Random} are taken from iPhone applications for Apple's iOS operating system. \emph {Mother 3} is a program for Nintendo's GameBoy Advance. Random is a long string of random bytes.}}{42}{table.5.4}
 \defcounter {refsection}{0}\relax 
-\contentsline {table}{\numberline {5.5}{\ignorespaces Number of times eight byte PIP headers occur in X86 programs and the percentage of the total program that they occupy. The programs \emph {cat, echo and ls} and small UNIX utilities. \emph {Hello} is the hello-world program written in C. \emph {Clang} is a C compiler; \emph {nasm} is an assembler and \emph {pandoc} is a Haskell based markdown compiler. \emph {Linux-2.6} is the Linux kernel and \emph {mach\_kernel} is a version of the Mach kernel by Carnegie Mellon University found in Apple's MacOS Lion.}}{39}{table.5.5}
+\contentsline {table}{\numberline {5.5}{\ignorespaces Number of times eight byte PIP headers occur in X86 programs and the percentage of the total program that they occupy. The programs \emph {cat, echo and ls} and small UNIX utilities. \emph {Hello} is the hello-world program written in C. \emph {Clang} is a C compiler; \emph {nasm} is an assembler and \emph {pandoc} is a Haskell based markdown compiler. \emph {Linux-2.6} is the Linux kernel and \emph {mach\_kernel} is a version of the Mach kernel by Carnegie Mellon University found in Apple's MacOS Lion.}}{43}{table.5.5}
 \defcounter {refsection}{0}\relax 
-\contentsline {table}{\numberline {5.6}{\ignorespaces A PIP containing a \emph {Hello World} program for ARM MIPS and X86.}}{41}{table.5.6}
+\contentsline {table}{\numberline {5.6}{\ignorespaces A PIP containing a \emph {Hello World} program for ARM MIPS and X86.}}{45}{table.5.6}
 \defcounter {refsection}{0}\relax 
-\contentsline {table}{\numberline {5.7}{\ignorespaces Decompilation of the PIP header used in Listing 5.4}}{46}{table.5.7}
+\contentsline {table}{\numberline {5.7}{\ignorespaces Decompilation of the PIP header used in Listing 5.4}}{50}{table.5.7}
 \defcounter {refsection}{0}\relax 
-\contentsline {table}{\numberline {5.8}{\ignorespaces A PIP header that shows how liveness analysis can be used to find more PIPs.}}{47}{table.5.8}
+\contentsline {table}{\numberline {5.8}{\ignorespaces A PIP header that shows how liveness analysis can be used to find more PIPs.}}{51}{table.5.8}
 \defcounter {refsection}{0}\relax 
 \addvspace {10\p@ }
 \defcounter {refsection}{0}\relax 
-\contentsline {table}{\numberline {6.1}{\ignorespaces Incomplete table of PIPs found for the XS1 architecture.}}{50}{table.6.1}
+\contentsline {table}{\numberline {6.1}{\ignorespaces Incomplete table of PIPs found for the XS1 architecture.}}{54}{table.6.1}
