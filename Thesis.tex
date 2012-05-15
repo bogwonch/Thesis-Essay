@@ -1,5 +1,5 @@
-\documentclass[10pt,]{book}
-\usepackage{amssymb,amsmath}
+\documentclass[10pt]{book}
+\usepackage{amssymb,amsmath,amsthm}
 \usepackage{ifxetex,ifluatex}
 \usepackage{microtype}
 \usepackage{fixltx2e} % provides \textsubscript
@@ -17,6 +17,11 @@
     \usepackage[utf8]{inputenc}
   \fi
 \fi
+\newtheorem{theorem}{Theorem}[section]
+
+\newenvironment{definition}[1][Definition]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
 \usepackage{biblatex}
 \bibliography{Thesis}
 \usepackage{listings}
@@ -57,17 +62,18 @@
 \setcounter{secnumdepth}{0}
 \VerbatimFootnotes % allows verbatim text in footnotes
 
+\usepackage{pdfpages}
+
 \title{Platform Independent Programs}
-\author{Joseph
-                Hallett\thanks{With thanks to Dr. Daniel Page for supervising the project and to Will Williams and Jake Longo for listening to me rant about PIPs and byte-code all year.}}
+\author{Joseph Hallett\thanks{With thanks to Dr. Daniel Page for supervising the project and to Will Williams and Jake Longo for listening to me rant about PIPs and byte-code all year.}}
 \date{\today}
 
 \widowpenalty=300
 \clubpenalty=300
 \usepackage{epigraph}
 \begin{document}
-\includegraphics[width=\linewidth]{Cover.pdf}
-\includegraphics[width=\linewidth]{Declaration.pdf}
+\includepdf[]{Cover.pdf}
+\includepdf[]{Declaration.pdf}
 
 
 \maketitle
@@ -115,10 +121,9 @@ programs written for a portable interpreter; a PIP does not require
 another program to run or compile it; rather it runs as a native program
 on multiple architectures with potentially different behaviours on each.
 
-A more formal definition of a PIP is a string of byte-code $b$ such that
-for different machines $m_1$ and $m_2$, $b$ is a valid program if:
-
-\[m_1(b) \not = \bot \wedge m_2(b) \not =\bot.\]
+\begin{definition}
+  A PIP is a string of bytecode ($b$) that would be accepted as a valid program by two or more different machines ($m_1, m_2$). \[m_1(b) \not = \bot \wedge m_2(b) \not =\bot.\]
+\end{definition}
 
 To construct a PIP one must analyse the instruction sets of each
 architecture and find instructions which compile to identical patterns
@@ -150,9 +155,9 @@ we can see that it disassembles to:
 }
 {% rows
 \FL
-Architecture & Disassembly
+Platform & Disassembly
 \ML
-X86 & \lstinline!nop; jmp 0x100000023; sub dl, [eax+0x243a20eb]; ja 0x10000000c; ???!
+X86 & \lstinline!nop; jmp 0x100000023; sub dl, [eax+0x243a20eb]; ja 0x10000000c;!
 \\\noalign{\medskip}
 ARM & \lstinline!bcs 0x10083ae48; bcc 0x10083ae4c; streq r7, [r1], #-1828!
 \\\noalign{\medskip}
@@ -188,7 +193,10 @@ Linux operating systems.
 For this thesis I have implemented a section of the PIP finding
 algorithm: the section for finding the \emph{gadget headers}; the PIPs
 that link the specific code sections together. To generate the PIPs a
-list of \emph{semantic NOPs}\footnote{A semantic NOP is an instruction
+list of \emph{semantic NOPs} is needed.
+
+\begin{definition}
+  A semantic NOP is an instruction
   which has no effect, but which might not necessarily be the \emph{NOP}
   assembly instruction. For example the ARM instruction:
   \lstinline!MOV r4, r4! Causes the contents of register four to be
@@ -196,7 +204,10 @@ list of \emph{semantic NOPs}\footnote{A semantic NOP is an instruction
   \lstinline!NOP! instruction. Equally the sequence of instructions:
   \lstinline!PUSH r3! \lstinline!POP r3! is equivalent to two
   \lstinline!NOP! instructions when taken as a whole and so is a
-  \emph{multi-instruction semantic NOP}.} and potential branch
+  \emph{multi-instruction semantic NOP}.
+\end{definition} 
+  
+Once the list of semantic NOPs and potential branch
 instructions has been found for each the ARM, X86 and MIPS
 architectures. These have been compiled into a list of PIP headers for
 each of the architectures.
@@ -828,6 +839,7 @@ output PIPs to the required length with do not cares if it is not long
 enough. Pseudo code for this process is given below in a python-esque
 language.
 
+\begin{figure}
 \begin{lstlisting}[language=python ,
 caption=Algorithm used to generate PIPs]
 def generate_possible_nop_jump_patterns(length, nop_list, jump_list):
@@ -845,6 +857,8 @@ def pad_with_nops(pattern, length, nop_list):
             for each PIP in pad_with_nops(pattern, length, nop_list):
                 yield PIP           
 \end{lstlisting}
+\end{figure}
+
 Once I have done this for multiple architectures I can try and find PIPs
 which are valid for two or more architectures. To do this I find the
 PIPs in each architecture which have equivalent forms and produce a new
@@ -852,6 +866,7 @@ PIP from them which is valid for both. It also forces some of the do
 not-cares symbols to actual values as one of the PIP patterns may demand
 it.
 
+\begin{figure}
 \begin{lstlisting}[language=haskell ,
 caption=Method used for removing \emph{do not-cares} from potential PIP headers]
 -- Equality with do not cares
@@ -884,6 +899,8 @@ findPIPs PIPs1 PIPs2 =
     , x `matches` y
     ]
 \end{lstlisting}
+\end{figure}
+
 These PIPs are the PIPs I am particularly interested in. I can repeat
 the process again to find PIPs for multiple architectures if I like by
 using the generated set of PIPs as one of the input sets.
@@ -953,14 +970,16 @@ Given that I can use PIPs to create programs with steganography it would
 be helpful to be able to distinguish PIP from non-PIP. Malware detection
 gives a set of methods to accomplish this.
 
-Using the detection notion defined in \autocite{Preda:2007ky} I define a
-malware detector as the following. Given the set of every possible
+\begin{definition}
+Using the detection notion defined in \autocite{Preda:2007ky} a
+malware detector is defined as the following. Given the set of every possible
 program $\mathbb{P}$ there is a subset $\mathbb{M}$ that have malicious
 behaviour. \[\mathbb{M\subset P}\] For some of the programs in
 $\mathbb{M}$ I have a signature $s$ which is formed in some way from the
 program. A detector $D$ is a function that given a $p\in\mathbb{P}$, and
 a signature $s$ says true if the signature was formed from that program
 and false otherwise.
+\end{definition}
 
 You can evaluate a detector and a set of signatures by seeing how well
 they can distinguish malware from non-malware. The false-negative rate
@@ -1035,13 +1054,14 @@ malware does.
 \item
   I used Ruby and Haskell to write various tools to create the PIPs.
 \item
-  I refered to the architecture manuals for ARM\autocite{Seal:2000vd},
+  I refered extensively to the architecture manuals for ARM\autocite{Seal:2000vd},
   MIPS\autocite{MIPSTechnologiesInc:2011ta},
   X86\autocite{IntelCorporation:1997ta} and XS1\autocite{May:ua}
-  extensively throughout the project but also made use of the ARM and
+ throughout the project but also made use of the ARM and
   Thumb Instruction Set Quick Reference Card\autocite{Limited:vc} and
   X86 Opcode reference\autocite{refx86}.
 \end{itemize}
+
 \chapter{Execution}
 
 \section{Semantic NOPs}
@@ -1098,8 +1118,7 @@ For example consider these entries from the database:
 }
 {% rows
 \FL
-Architecture & Instruction Prefix & Instruction Suffix & Bytecode
-Prefix & Bytecode Suffix
+$A$ & $I_\text{prefix}$ & $I_\text{suffix}$ & $B_\text{prefix}$ & $B_\text{suffix}$
 \ML
 X86 & PUSH \%rax & POP \%rax & 50 & 58
 \\\noalign{\medskip}
@@ -1423,37 +1442,37 @@ MIPS and X86., pos = H, center, botcap]{ll}
 \FL
 Hexadecimal & Characters
 \ML
-\texttt{7f454c46 01010100 00000000 00000000} & \texttt{\frenchspacing .ELF............}
+\lstinline!7f454c46 01010100 00000000 00000000! & \lstinline!.ELF............!
 \\\noalign{\medskip}
-\texttt{02000300 01000000 54800408 34000000} & \texttt{\frenchspacing ........T...4...}
+\lstinline!02000300 01000000 54800408 34000000! & \lstinline!........T...4...!
 \\\noalign{\medskip}
-\texttt{00000000 00000000 34002000 01000000} & \texttt{\frenchspacing ........4. .....}
+\lstinline!00000000 00000000 34002000 01000000! & \lstinline!........4. .....!
 \\\noalign{\medskip}
-\texttt{00000000 01000000 00000000 00800408} & \texttt{\frenchspacing ................}
+\lstinline!00000000 01000000 00000000 00800408! & \lstinline!................!
 \\\noalign{\medskip}
-\texttt{00800408 f4000000 f4000000 05000000} & \texttt{\frenchspacing ................}
+\lstinline!00800408 f4000000 f4000000 05000000! & \lstinline!................!
 \\\noalign{\medskip}
-\texttt{00100000 90eb3e20 1700002a 1600003a} & \texttt{\frenchspacing ......> ...*...:}
+\lstinline!00100000 90eb3e20 1700002a 1600003a! & \lstinline!......> ...*...:!
 \\\noalign{\medskip}
-\texttt{07000010 00000424 2128e003 0c000624} & \texttt{\frenchspacing .......\$!(.....\$}
+\lstinline!07000010 00000424 2128e003 0c000624! & \lstinline".......$!(.....$"
 \\\noalign{\medskip}
-\texttt{a40f0224 0c000000 a10f0224 0c000000} & \texttt{\frenchspacing ...\$.......\$....}
+\lstinline!a40f0224 0c000000 a10f0224 0c000000! & \lstinline!...$.......$....!
 \\\noalign{\medskip}
-\texttt{f8ff1104 00000000 48656c6c 6f20776f} & \texttt{\frenchspacing ........Hello wo}
+\lstinline!f8ff1104 00000000 48656c6c 6f20776f! & \lstinline!........Hello wo!
 \\\noalign{\medskip}
-\texttt{726c640a 90909090 eb1731db 438b0c24} & \texttt{\frenchspacing rld.......1.C..\$}
+\lstinline!726c640a 90909090 eb1731db 438b0c24! & \lstinline!rld.......1.C..$!
 \\\noalign{\medskip}
-\texttt{ba0c0000 00b80400 0000cd80 31c040cd} & \texttt{\frenchspacing ............1.\@.}
+\lstinline!ba0c0000 00b80400 0000cd80 31c040cd! & \lstinline!............1.@.!
 \\\noalign{\medskip}
-\texttt{80e8e4ff ffff4865 6c6c6f20 576f726c} & \texttt{\frenchspacing ......Hello Worl}
+\lstinline!80e8e4ff ffff4865 6c6c6f20 576f726c! & \lstinline!......Hello Worl!
 \\\noalign{\medskip}
-\texttt{640a9090 0100a0e3 18108fe2 0c20a0e3} & \texttt{\frenchspacing d............ ..}
+\lstinline!640a9090 0100a0e3 18108fe2 0c20a0e3! & \lstinline!d............ ..!
 \\\noalign{\medskip}
-\texttt{0470a0e3 000000ef 0000a0e3 0170a0e3} & \texttt{\frenchspacing .p...........p..}
+\lstinline!0470a0e3 000000ef 0000a0e3 0170a0e3! & \lstinline!.p...........p..!
 \\\noalign{\medskip}
-\texttt{000000ef 0000a0e1 48656c6c 6f20576f} & \texttt{\frenchspacing ........Hello Wo}
+\lstinline!000000ef 0000a0e1 48656c6c 6f20576f! & \lstinline!........Hello Wo!
 \\\noalign{\medskip}
-\texttt{726c640a} & \textbackslash{}texttt\{\frenchspacing rld. \$\}
+\lstinline!726c640a! & \lstinline!rld.!
 \LL
 }
 
@@ -1468,7 +1487,8 @@ made\autocite{Kerrisk:vo}. Before each system call arguments are loaded
 such that the first is a write operation, and the second is an exit.
 This program clearly has some X86 behaviour.
 
-\begin{lstlisting}[basicstyle=\tt, ,
+\begin{figure}
+\begin{lstlisting}[
 caption=A disassembled section of the PIP in Table 5.6 for the X86 architecture.]
 write:
         xor ebx, ebx
@@ -1482,6 +1502,8 @@ exit:
         inc eax
         int 0x80
 \end{lstlisting}
+\end{figure}
+
 If I disassemble the program in Table 5.6 as an ARM program (as shown in
 Listing 5.2) however I can quickly find an equivalent section of code.
 Again this is all valid ARM code and it obviously does a write system
@@ -1490,7 +1512,8 @@ behavior as well as X86; this program is probably a PIP and I have
 discovered this just by inspecting the disassembly---a form of static
 analysis.
 
-\begin{lstlisting}[basicstyle=\tt, ,
+\begin{figure}
+\begin{lstlisting}[
 caption=A disassembled section of the PIP in Table 5.6 this time for the ARM architecture.]
 write:
         mov r0, #1 ; 0x1
@@ -1503,6 +1526,7 @@ exit:
         mov r7, #1 ; 0x1
         svc 0x00000000
 \end{lstlisting}
+\end{figure}
 If I try again using a MIPS disassembler I get the code in Listing 5.3.
 Again its pretty obvious what is going on and it did not take long to
 find even by eye. This PIP is probably valid on the MIPS platform as
@@ -1514,7 +1538,8 @@ creating a static analyser to detect how much valid code for different
 architectures there is in a program and whether any of it seems to form
 a valid program snippet.
 
-\begin{lstlisting}[basicstyle=\tt, ,
+\begin{figure}
+\begin{lstlisting}[
 caption=A disassembled section of the PIP in Table 5.6 for the MIPS architecture.]
 write:
         li a0,0
@@ -1526,6 +1551,8 @@ exit:
         li v0,4001
         syscall
 \end{lstlisting}
+\end{figure}
+
 This means that if I wanted to use the number of PIP headers in a
 program as a metric, I should be able to construct a PIP detector where
 a greater number of PIP headers would indicate increased confidence in
@@ -1598,16 +1625,19 @@ TheWorm\autocite{TheWorm:vp}. The shell code uses a single PIP header
 which would also allow this PIP to be valid for the ARM architecture if
 it were extended further.
 
-\begin{lstlisting}[mathescape=true, ,
+\begin{figure}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize, , mathescape=true, ,
 caption=An example of a shell code PIP for X86 and MIPS which attempts to spawn a shell and elevate permissions.  Shellcode for each architecture was taken from \autocite{Imrigan:vg}\autocite{TheWorm:vp}.]
 eb020008 00000000 6a175831 dbcd80b0 80b02ecd 806a0b58 9952682f 2f736868
 2f62696e 89e35253 89e1cd80 00000000 00000000 00000000 00000000 00000000
 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-                         $\mathrm{\normalsize\vdots \text{\ \textsf{89 lines ommited}\ } \vdots}$ 
+                         $\mathrm{\vdots \text{\ \textsf{89 lines ommited}\ } \vdots}$ 
 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
 00000000 00000000 2806ffff 3c0f2f2f 35ef6269 afaffff4 3c0e6e2f 35ce7368
 afaefff8 afa0fffc 27a4fff4 2805ffff 24030fab 0101010c 
 \end{lstlisting}
+\end{figure}
+
 The shell code is far from ideal. A decompilation of the PIP header can
 be seen in Table 5.7, but an immediately obvious flaw is that the PIP
 header used has a nil byte in it. Even discarding the long sequence of
@@ -1756,7 +1786,7 @@ architecture., pos = H, center, botcap]{llllll}
 }
 {% rows
 \FL
-Size of XS1 section & ARM BE & ARM LE & MIPS BE & MIPS LE & X86
+XS1 Size & ARM BE & ARM LE & MIPS BE & MIPS LE & X86
 \ML
 4 B & $3.2\times10^4$ & $0$ & $1.4\times10^5$ & 0 & $3.3\times10^4$
 \LL

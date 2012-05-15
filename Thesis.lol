@@ -1,11 +1,11 @@
 \defcounter {refsection}{0}\relax 
-\contentsline {lstlisting}{\numberline {3.1}Algorithm used to generate PIPs}{28}{lstlisting.3.1}
+\contentsline {lstlisting}{\numberline {3.1}Algorithm used to generate PIPs}{29}{lstlisting.3.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {lstlisting}{\numberline {3.2}Method used for removing \emph {do not-cares} from potential PIP headers}{29}{lstlisting.3.2}
+\contentsline {lstlisting}{\numberline {3.2}Method used for removing \emph {do not-cares} from potential PIP headers}{30}{lstlisting.3.2}
 \defcounter {refsection}{0}\relax 
 \contentsline {lstlisting}{\numberline {5.1}A disassembled section of the PIP in Table 5.6 for the X86 architecture.}{46}{lstlisting.5.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {lstlisting}{\numberline {5.2}A disassembled section of the PIP in Table 5.6 this time for the ARM architecture.}{46}{lstlisting.5.2}
+\contentsline {lstlisting}{\numberline {5.2}A disassembled section of the PIP in Table 5.6 this time for the ARM architecture.}{47}{lstlisting.5.2}
 \defcounter {refsection}{0}\relax 
 \contentsline {lstlisting}{\numberline {5.3}A disassembled section of the PIP in Table 5.6 for the MIPS architecture.}{47}{lstlisting.5.3}
 \defcounter {refsection}{0}\relax 

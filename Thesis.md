@@ -34,7 +34,7 @@ $$\underbrace{\overbrace{90}^{\text{NOP}} \overbrace{eb20}^{\text{JMP}}
 
 The string is valid on both platforms and has similar behaviour on both despite jumping to different locations.  In fact this is a valid PIP for the X86, MIPS and ARM architectures.  If we disassemble the pattern with the Radare2 reverse engineering framework[@radarenopcodeorg:vw] we can see that it disassembles to:
 
- Architecture  Disassembly
+ Platform      Disassembly
  ------------  ----------------------------------------------------------------------------
  X86           `nop; jmp 0x100000023; sub dl, [eax+0x243a20eb]; ja 0x10000000c; ???`
  ARM           `bcs 0x10083ae48; bcc 0x10083ae4c; streq r7, [r1], #-1828`
@@ -403,9 +403,9 @@ By using prefix and suffixes I can separate certain multi-instruction semantic N
 
 For example consider these entries from the database:
 
-  Architecture  Instruction Prefix  Instruction Suffix  Bytecode Prefix  Bytecode Suffix
-  ------------  ------------------  ------------------  ---------------  ---------------
-  X86           PUSH %rax           POP %rax            50               58
+  $A$           $I_\text{prefix}$   $I_\text{suffix}$   $B_\text{prefix}$  $B_\text{suffix}$ 
+  ------------  ------------------  ------------------  -----------------  -----------------
+  X86           PUSH %rax           POP %rax            50                 58
   X86           NOP                                     90
 
 
@@ -517,22 +517,22 @@ As an example consider this PIP taken from [@Cha:2010uh]:
 
   Hexadecimal                                      Characters
   -----------------------------------------------  -------------------------------------------
-  \texttt{7f454c46 01010100 00000000 00000000}     \texttt{\frenchspacing .ELF............}
-  \texttt{02000300 01000000 54800408 34000000}     \texttt{\frenchspacing ........T...4...}
-  \texttt{00000000 00000000 34002000 01000000}     \texttt{\frenchspacing ........4. .....}
-  \texttt{00000000 01000000 00000000 00800408}     \texttt{\frenchspacing ................}
-  \texttt{00800408 f4000000 f4000000 05000000}     \texttt{\frenchspacing ................}
-  \texttt{00100000 90eb3e20 1700002a 1600003a}     \texttt{\frenchspacing ......> ...*...:}
-  \texttt{07000010 00000424 2128e003 0c000624}     \texttt{\frenchspacing .......\$!(.....\$}
-  \texttt{a40f0224 0c000000 a10f0224 0c000000}     \texttt{\frenchspacing ...\$.......\$....}
-  \texttt{f8ff1104 00000000 48656c6c 6f20776f}     \texttt{\frenchspacing ........Hello wo}
-  \texttt{726c640a 90909090 eb1731db 438b0c24}     \texttt{\frenchspacing rld.......1.C..\$}
-  \texttt{ba0c0000 00b80400 0000cd80 31c040cd}     \texttt{\frenchspacing ............1.\@.}
-  \texttt{80e8e4ff ffff4865 6c6c6f20 576f726c}     \texttt{\frenchspacing ......Hello Worl}
-  \texttt{640a9090 0100a0e3 18108fe2 0c20a0e3}     \texttt{\frenchspacing d............ ..}
-  \texttt{0470a0e3 000000ef 0000a0e3 0170a0e3}     \texttt{\frenchspacing .p...........p..}
-  \texttt{000000ef 0000a0e1 48656c6c 6f20576f}     \texttt{\frenchspacing ........Hello Wo}
-  \texttt{726c640a}                                \texttt{\frenchspacing rld.           $}
+  `7f454c46 01010100 00000000 00000000`            `.ELF............`
+  `02000300 01000000 54800408 34000000`            `........T...4...`
+  `00000000 00000000 34002000 01000000`            `........4. .....`
+  `00000000 01000000 00000000 00800408`            `................`
+  `00800408 f4000000 f4000000 05000000`            `................`
+  `00100000 90eb3e20 1700002a 1600003a`            `......> ...*...:`
+  `07000010 00000424 2128e003 0c000624`            `.......$!(.....$`
+  `a40f0224 0c000000 a10f0224 0c000000`            `...$.......$....`
+  `f8ff1104 00000000 48656c6c 6f20776f`            `........Hello wo`
+  `726c640a 90909090 eb1731db 438b0c24`            `rld.......1.C..$`
+  `ba0c0000 00b80400 0000cd80 31c040cd`            `............1.@.`
+  `80e8e4ff ffff4865 6c6c6f20 576f726c`            `......Hello Worl`
+  `640a9090 0100a0e3 18108fe2 0c20a0e3`            `d............ ..`
+  `0470a0e3 000000ef 0000a0e3 0170a0e3`            `.p...........p..`
+  `000000ef 0000a0e1 48656c6c 6f20576f`            `........Hello Wo`
+  `726c640a                           `            `rld.            `
 
   : A PIP containing a *Hello World* program for ARM MIPS and X86.
 
@@ -604,11 +604,11 @@ Using PIPs To Write Programs
 
 To demonstrate PIPs I created a shell code (shown in Listing 5.4) for the MIPS and X86 architectures using existing platform specific shell codes by Richard Imrigan[@Imrigan:vg] and TheWorm[@TheWorm:vp].  The shell code uses a single PIP header which would also allow this PIP to be valid for the ARM architecture if it were extended further.
 
-````{ mathescape=true, caption="An example of a shell code PIP for X86 and MIPS which attempts to spawn a shell and elevate permissions.  Shellcode for each architecture was taken from \autocite{Imrigan:vg}\autocite{TheWorm:vp}." }
+````{ basicstyle=\ttfamily\scriptsize, mathescape=true, caption="An example of a shell code PIP for X86 and MIPS which attempts to spawn a shell and elevate permissions.  Shellcode for each architecture was taken from \autocite{Imrigan:vg}\autocite{TheWorm:vp}." }
 eb020008 00000000 6a175831 dbcd80b0 80b02ecd 806a0b58 9952682f 2f736868
 2f62696e 89e35253 89e1cd80 00000000 00000000 00000000 00000000 00000000
 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-                         $\mathrm{\normalsize\vdots \text{\ \textsf{89 lines ommited}\ } \vdots}$ 
+                         $\mathrm{\vdots \text{\ \textsf{89 lines ommited}\ } \vdots}$ 
 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
 00000000 00000000 2806ffff 3c0f2f2f 35ef6269 afaffff4 3c0e6e2f 35ce7368
 afaefff8 afa0fffc 27a4fff4 2805ffff 24030fab 0101010c 
@@ -672,7 +672,7 @@ I only partially managed to get the PIP generation algorithm going for the XS1 a
 
 If I restrict the search to XS1 PIPs which use the `BRBU` and `BRFU` instructions I can find some for the XS1  architecture (Table 6.1).  This is not a complete search (and hence why it is not presented as part of the main results) but it definitely indicates that the XS1 architecture is vulnerable to this technique and is comparable to X86 in terms of susceptibility.
 
-  Size of XS1 section  ARM BE               ARM LE            MIPS BE             MIPS LE            X86
+  XS1 Size             ARM BE               ARM LE            MIPS BE             MIPS LE            X86
   -------------------  -------------------  ----------------  ------------------  -----------------  -------------------
   4 B                  $3.2\times10^4$      $0$               $1.4\times10^5$     0                  $3.3\times10^4$
 
