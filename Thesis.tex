@@ -85,29 +85,14 @@
 \lstlistoflistings
 \chapter{Executive Summary}
 
-\emph{Platform Independent Programs} (PIPs) are a new type of program
-whose byte-code can be run on multiple architectures without
-modification. By exploiting overlaps between architectures of their
-compiled instruction formats it is possible to create small sequences of
-code called, PIP headers, that jump to different places depending on
-which architecture runs them. By chaining the PIP headers with jumps to
-platform specific code you can construct whole programs that run on
-multiple architectures.
+Platform Independent Programs (PIPs) are a new type of program whose byte-code can be run on multiple architectures without modification. By exploiting the overlaps between the instruction formats of different architectures, it is possible to create small sequences of code called PIP headers that jump to different places depending on which architecture runs them. By chaining the PIP headers with jumps to platform specific code you can construct whole programs that run on multiple architectures.
 
-I created a database of semantic NOP (no-operation) instructions for the
-ARM, MIPS, X86 and XS1 architectures and used it to find PIP headers for
-the ARM, MIPS and X86 platforms and to show the technique is also
-possible on XS1. I improved upon the existing attempts to find four byte
-PIPs for the MIPS platform, and found approximately the same number for
-every other architecture. I looked at the steganographic properties of
-PIPs and the occurrences of PIP headers in non PIP programs. I
-determined that using repeated PIP headers would lead to a PIP that was
-easily distinguished from a non PIP by statistical methods. I suggested
-other methods to create PIPs that could not be detected by a signature
-based scheme by using metamorphism, encryption, and microcode updates. I
-created an example shellcode using a PIP header that highlighted the
-need for some form of static analysis to be introduced to the PIP header
-generation routine to fully utilize PIPs.
+I created a database of semantic NOP (no-operation) instructions for the ARM, MIPS, X86 and XS1 architectures and used it to find PIP headers for the ARM, MIPS and X86 platforms and to show the technique is also possible on XS1. 
+I improved upon the existing attempts to find four byte PIPs for the MIPS platform, and found approximately the same number for every other architecture. 
+
+I looked at the steganographic properties of PIPs and the occurrences of PIP headers in non PIP programs.  I found that using repeated PIP headers would lead to a PIP that was easily distinguished from a non PIP by statistical methods. I suggested other methods to create PIPs that could not be detected by a signature-based scheme by using metamorphism, encryption, and microcode updates.
+
+I created an example shellcode using a PIP header that highlighted the need for some form of static analysis to be introduced to the PIP header generation routine to fully utilise PIPs.
 
 \chapter{Introduction}
 
